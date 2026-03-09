@@ -1,7 +1,6 @@
-import {canvas} from "./canvas.js";
 import {products} from "../data/products.js"
 
-canvas();
+
 
 let productsHTML = '';
 
