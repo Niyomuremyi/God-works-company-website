@@ -1,5 +1,9 @@
     .the-above {
         height: 55px;
+        position:fixed;
+        top:0;
+        left:0;
+        right:0;
         display: flex;
         background-color:darkslategray;
         justify-content: space-between;
@@ -91,7 +95,13 @@
         text-decoration: none;
         color: black;
         font-family: Arial;
+        cursor:pointer;
     }
+
+    .s-link:hover{
+       border: 1px solid white;
+    }
+
 
     .returns-text {
         font-size: 12px;
@@ -101,6 +111,26 @@
         font-size: 14px;
         font-weight: bold;
     }
+
+    .cart-icon-container{
+        position:relative;
+    }
+    
+    .cart-icon-container:hover{
+         border:1px solid white;
+    }
+
+    .cart-number{
+        position:absolute;
+        top:0;
+        right:15px;
+        color:yellow;
+    }
+    
+    .cart-icon-link{
+        cursor:pointer;
+    }
+ 
 
     .cart-icon {
         width: 50px;

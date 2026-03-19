@@ -1,0 +1,35 @@
+.checkout-container{
+  max-width:70%;  
+  margin:0 auto;
+}
+
+.checkout-header{
+  height:60px;
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:80px;
+}
+
+.first-part-header{
+  width:300px;
+  display:flex;
+  align-items:center;
+  font-size:20px;
+  font-weight:bold;
+}
+
+.second-part-header{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:600;
+  font-size:20px;
+}
+
+.third-part-header{
+  width:100px;
+  display:flex;
+  align-items:center;
+  justify-content:end;
+}
