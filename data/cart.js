@@ -55,3 +55,18 @@ cart = newArray;
 
 addToLocalStorage();
 }
+
+export function updateDeliveryOptions(productId , deliveryOptionId){
+    let matchingItem;
+   cart.forEach((cartItem)=>{
+    if(cartItem.productId === productId){
+       matchingItem = cartItem;
+    }
+  });
+
+  if(matchingItem){
+    matchingItem.deliveryOptionId = deliveryOptionId;
+  }
+
+  addToLocalStorage();
+}
