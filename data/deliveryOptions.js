@@ -13,3 +13,11 @@ export const deliveryOptions = [{
 }
 ];
 
+export function getDeliveryOption(productId){
+   let deliveryOption;
+  deliveryOptions.forEach((option)=>{
+    deliveryOption = option
+  });
+
+  return deliveryOption;
+}
