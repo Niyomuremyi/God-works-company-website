@@ -5,7 +5,9 @@ import dayjs from "https://unpkg.com/supersimpledev@8.5.0/dayjs/esm/index.js";
 import {deliveryOptions} from "../data/deliveryOptions.js";
 
 
-let addCartHTML = "";
+function renderOrderSummary(){
+  
+let addCartHTML = ""; 
 
 cart.forEach((cartItem) => {
   const productId = cartItem.productId;
@@ -102,6 +104,10 @@ document.querySelectorAll('.js-delivery-option-input')
  .forEach((element)=>{
    element.addEventListener('click',()=>{
     const {productId,deliveryOptionId} = element.dataset;
-    updateDeliveryOptions(productId , deliveryOptionId)
+    updateDeliveryOptions(productId , deliveryOptionId);
+    renderOrderSummary();
    })
  })
+ }
+
+ renderOrderSummary();
