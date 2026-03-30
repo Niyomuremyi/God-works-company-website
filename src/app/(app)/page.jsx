@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-// import { ProductSection } from "@/components/app/ProductSection";
+import { ProductSection } from "@/components/app/ProductSection";
 // import { CategoryTiles } from "@/components/app/CategoryTiles";
 // import { FeaturedCarousel } from "@/components/app/FeaturedCarousel";
 // import { FeaturedCarouselSkeleton } from "@/components/app/FeaturedCarouselSkeleton";
@@ -72,7 +72,7 @@ export default function HomePage() {
             Shop {categorySlug || "All Products"}
           </h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Premium furniture for your home
+            Premium products in your life
           </p>
         </div>
 
@@ -86,11 +86,11 @@ export default function HomePage() {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* <ProductSection
+        <ProductSection
           categories={categories}
           products={products}
           searchQuery={searchQuery}
-        /> */}
+        />
       </div>
     </div>
   );
