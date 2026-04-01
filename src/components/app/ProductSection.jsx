@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { PanelLeftClose, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductFilters } from "./ProductFilters";
 import { ProductGrid } from "./ProductGrid";
+import { ProductFiltersSkeleton } from "./ProductFiltersSekeleton";
 
 export function ProductSection({ categories, products, searchQuery }) {
   const [filtersOpen, setFiltersOpen] = useState(true);
@@ -56,7 +57,9 @@ export function ProductSection({ categories, products, searchQuery }) {
             filtersOpen ? "w-full lg:w-72 lg:opacity-100" : "hidden lg:hidden"
           }`}
         >
+          <Suspense fallback={<ProductFiltersSkeleton/>}>
           <ProductFilters categories={categories} />
+          </Suspense>
         </aside>
 
         {/* Product Grid - expands to full width when filters hidden */}
