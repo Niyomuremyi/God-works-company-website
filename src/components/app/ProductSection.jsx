@@ -56,7 +56,7 @@ export function ProductSection({ categories, products, searchQuery }) {
             filtersOpen ? "w-full lg:w-72 lg:opacity-100" : "hidden lg:hidden"
           }`}
         >
-          {/* <ProductFilters categories={categories} /> */}
+          <ProductFilters categories={categories} />
         </aside>
 
         {/* Product Grid - expands to full width when filters hidden */}

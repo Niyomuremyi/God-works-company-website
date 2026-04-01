@@ -2,47 +2,91 @@
 
 import { Suspense } from "react";
 import { ProductSection } from "@/components/app/ProductSection";
-// import { CategoryTiles } from "@/components/app/CategoryTiles";
+import { CategoryTiles } from "@/components/app/CategoryTiles";
 // import { FeaturedCarousel } from "@/components/app/FeaturedCarousel";
 // import { FeaturedCarouselSkeleton } from "@/components/app/FeaturedCarouselSkeleton";
 
 // Dummy categories
 const categories = [
-  { id: "1", name: "Chairs", slug: "chairs" },
-  { id: "2", name: "Tables", slug: "tables" },
-  { id: "3", name: "Sofas", slug: "sofas" },
-  { id: "4", name: "Beds", slug: "beds" },
+  { _id: "1", name: "Chairs", slug: "chairs" },
+  { _id: "2", name: "Tables", slug: "tables" },
+  { _id: "3", name: "Sofas", slug: "sofas" },
+  { _id: "4", name: "Beds", slug: "beds" },
 ];
 
 // Dummy products
 const products = [
   {
-    id: "p1",
+    _id: "p1",
     name: "Modern Chair",
     price: 129.99,
-    image: "/images/chair1.jpg",
-    category: "chairs",
+    slug: "modern-chair",
+    stock: 12,
+    category: {
+      title: "Chairs",
+    },
+    images: [
+      {
+        _key: "img1",
+        asset: {
+          url: "https://picsum.photos/600/400?random=5",
+        },
+      },
+    ],
   },
   {
-    id: "p2",
+    _id: "p2",
     name: "Wooden Table",
     price: 249.99,
-    image: "/images/table1.jpg",
-    category: "tables",
+    slug: "wooden-table",
+    stock: 8,
+    category: {
+      title: "Tables",
+    },
+    images: [
+      {
+        _key: "img2",
+        asset: {
+          url: "https://picsum.photos/600/400?random=6",
+        },
+      },
+    ],
   },
   {
-    id: "p3",
+    _id: "p3",
     name: "Luxury Sofa",
     price: 599.99,
-    image: "/images/sofa1.jpg",
-    category: "sofas",
+    slug: "luxury-sofa",
+    stock: 4,
+    category: {
+      title: "Sofas",
+    },
+    images: [
+      {
+        _key: "img3",
+        asset: {
+          url: "https://picsum.photos/600/400?random=7",
+        },
+      },
+    ],
   },
   {
-    id: "p4",
+    _id: "p4",
     name: "Queen Bed",
     price: 399.99,
-    image: "/images/bed1.jpg",
-    category: "beds",
+    slug: "queen-bed",
+    stock: 0,
+    category: {
+      title: "Beds",
+    },
+    images: [
+      {
+        _key: "img4",
+        asset: {
+          url: "https://picsum.photos/600/400?random=8",
+        },
+      },
+    ],
   },
 ];
 
@@ -78,10 +122,10 @@ export default function HomePage() {
 
         {/* Category Tiles */}
         <div className="mt-6">
-          {/* <CategoryTiles
+          <CategoryTiles
             categories={categories}
             activeCategory={categorySlug || undefined}
-          /> */}
+          />
         </div>
       </div>
 
