@@ -250,7 +250,7 @@ export function ProductFilters({ categories }) {
       {/* Price Range */}
       <div>
         <FilterLabel isActive={isPriceActive} filterKey="price">
-          Price Range: £{priceRange[0]} - £{priceRange[1]}
+          Price Range: Frw{priceRange[0]} - Frw{priceRange[1]}
         </FilterLabel>
 
         <Slider

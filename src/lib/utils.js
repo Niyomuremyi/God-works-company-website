@@ -13,10 +13,10 @@ export function cn(...inputs) {
 /**
  * Format a price amount with currency symbol
  * @param {number|null|undefined} amount - The price amount
- * @param {string} currency - Currency symbol (default: "£")
- * @returns {string} Formatted price string (e.g., "£599.99")
+ * @param {string} currency - Currency symbol (default: "Frw")
+ * @returns {string} Formatted price string (e.g., "Frw599.99")
  */
-export function formatPrice(amount, currency = "£") {
+export function formatPrice(amount, currency = "Frw") {
   return `${currency}${(amount ?? 0).toFixed(2)}`;
 }
 

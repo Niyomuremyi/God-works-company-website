@@ -3,8 +3,8 @@
 import { Suspense } from "react";
 import { ProductSection } from "@/components/app/ProductSection";
 import { CategoryTiles } from "@/components/app/CategoryTiles";
-// import { FeaturedCarousel } from "@/components/app/FeaturedCarousel";
-// import { FeaturedCarouselSkeleton } from "@/components/app/FeaturedCarouselSkeleton";
+import { FeaturedCarousel } from "@/components/app/FeaturedCarousel";
+import { FeaturedCarouselSkeleton } from "@/components/app/FeaturedCarouselSkeleton";
 
 // Dummy categories
 const categories = [
@@ -103,11 +103,11 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
       {/* Featured Products Carousel */}
-      {/* {featuredProducts.length > 0 && (
+      {featuredProducts.length > 0 && (
         <Suspense fallback={<FeaturedCarouselSkeleton />}>
           <FeaturedCarousel products={featuredProducts} />
         </Suspense>
-      )} */}
+      )}
 
       {/* Page Banner */}
       <div className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
