@@ -5,6 +5,7 @@ import ImageGallery from "../components/ImageGallery";
 import VariantSelector from "../components/VariantSelector";
 import AddToCart from "../components/AddToCart";
 import SellerCard from "../components/SellerCard";
+import Reviews from "../components/Reviews";
 
 const seller = {
   name: "AeroSport Official",
@@ -19,7 +20,7 @@ export default function Home() {
 
   return (
     <div style={{ maxWidth: "900px", margin: "auto", padding: "20px" }}>
-      {/* Nav with cart count */}
+      {/* Nav */}
       <div
         style={{
           display: "flex",
@@ -33,8 +34,8 @@ export default function Home() {
           🛒{" "}
           <span
             style={{
-              background: "black",
-              color: "white",
+              background: "white",
+              color: "black",
               borderRadius: "50%",
               padding: "2px 8px",
               fontSize: "13px",
@@ -61,6 +62,9 @@ export default function Home() {
 
       {/* Seller Card */}
       <SellerCard seller={seller} />
+
+      {/* Reviews */}
+      <Reviews />
     </div>
   );
 }
