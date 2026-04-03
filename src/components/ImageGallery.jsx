@@ -214,4 +214,4 @@ export default function ImageGallery({ selectedVariant }) {
       )}
     </div>
   );
-}
+} 
