@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import ImageGallery from "../components/ImageGallery";
-import VariantSelector from "../components/VariantSelector";
-import AddToCart from "../components/AddToCart";
-import SellerCard from "../components/SellerCard";
-import Reviews from "../components/Reviews";
-import QandA from "../components/QandA";
-import Carousel from "../components/Carousel";
+import ImageGallery from "@/components/ImageGallery";
+import VariantSelector from "@/components/VariantSelector";
+import AddToCart from "@/components/AddToCart";
+import SellerCard from "@/components/SellerCard";
+import Reviews from "@/components/Reviews";
+import QandA from "@/components/QandA";
+import Carousel from "@/components/Carousel";
 
 const seller = {
   name: "AeroSport Official",
