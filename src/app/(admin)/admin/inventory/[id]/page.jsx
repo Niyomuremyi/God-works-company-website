@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 
@@ -34,7 +34,7 @@ const COLORS = [
 ];
 
 export default function ProductDetailPage({ params }) {
-  const { id } = params;
+  const { id } = use(params);
 
   const [product, setProduct] = useState({
     id,
