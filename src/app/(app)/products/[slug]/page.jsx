@@ -107,7 +107,15 @@ export default function Home() {
   const [cartCount, setCartCount] = useState(0);
 
   return (
-    <div style={{ maxWidth: "900px", margin: "auto", padding: "20px" }}>
+    <div
+      style={{
+        maxWidth: "900px",
+        margin: "auto",
+        padding: "20px",
+        background: "#1a1a1a",
+        minHeight: "100vh",
+      }}
+    >
       {/* Nav */}
       <div
         style={{
@@ -163,5 +171,3 @@ export default function Home() {
     </div>
   );
 }
-
-
