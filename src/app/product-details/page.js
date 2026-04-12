@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import ImageGallery from "../components/ImageGallery";
-import VariantSelector from "../components/VariantSelector";
-import AddToCart from "../components/AddToCart";
-import SellerCard from "../components/SellerCard";
-import Reviews from "../components/Reviews";
-import QandA from "../components/QandA";
-import Carousel from "../components/Carousel";
+import ImageGallery from "../../components/ImageGallery";
+import VariantSelector from "../../components/VariantSelector";
+import AddToCart from "../../components/AddToCart";
+import SellerCard from "../../components/SellerCard";
+import Reviews from "../../components/Reviews";
+import QandA from "../../components/QandA";
+import Carousel from "../../components/Carousel";
 
 const seller = {
   name: "AeroSport Official",
@@ -112,7 +112,7 @@ export default function Home() {
         maxWidth: "900px",
         margin: "auto",
         padding: "20px",
-        background: "#1a1a1a",
+        background: "#f5f5f5",
         minHeight: "100vh",
       }}
     >
@@ -131,7 +131,7 @@ export default function Home() {
           <span
             style={{
               background: "white",
-              color: "black",
+              color: "#111111",
               borderRadius: "50%",
               padding: "2px 8px",
               fontSize: "13px",

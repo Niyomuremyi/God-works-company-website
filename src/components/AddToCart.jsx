@@ -27,18 +27,18 @@ export default function AddToCart({ selectedVariant, cartCount, setCartCount }) 
 
       {/* Quantity Stepper */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
-        <span style={{ fontWeight: "500" }}>Quantity:</span>
-        <div style={{ display: "flex", alignItems: "center", border: "1px solid gray", borderRadius: "6px", overflow: "hidden" }}>
+        <span style={{ fontWeight: "500", color:"#111111" }}>Quantity:</span>
+        <div style={{ display: "flex", alignItems: "center", border: "1px solid gray", borderRadius: "6px", overflow: "hidden", background: "#ffffff" }}>
           <button
             onClick={() => setQty((prev) => Math.max(1, prev - 1))}
-            style={{ width: "36px", height: "36px", background: "none", border: "none", fontSize: "18px", cursor: "pointer" }}
+            style={{ width: "36px", height: "36px", background: "none", border: "none", fontSize: "18px", cursor: "pointer", color:"#111111" }}
           >
             −
           </button>
-          <span style={{ width: "36px", textAlign: "center", fontWeight: "500" }}>{qty}</span>
+          <span style={{ width: "36px", textAlign: "center", fontWeight: "500", color:"#111111" }}>{qty}</span>
           <button
             onClick={() => setQty((prev) => Math.min(10, prev + 1))}
-            style={{ width: "36px", height: "36px", background: "none", border: "none", fontSize: "18px", cursor: "pointer" }}
+            style={{ width: "36px", height: "36px", background: "none", border: "none", fontSize: "18px", cursor: "pointer", color:"#111111" }}
           >
             +
           </button>
@@ -52,7 +52,7 @@ export default function AddToCart({ selectedVariant, cartCount, setCartCount }) 
           disabled={!selectedVariant}
           style={{
             flex: 1, height: "48px",
-            background: selectedVariant ? "black" : "#ccc",
+            background: selectedVariant ? "#111111" : "#555555",
             color: "white", border: "none",
             borderRadius: "8px", fontSize: "14px",
             fontWeight: "600", cursor: selectedVariant ? "pointer" : "not-allowed",
@@ -65,7 +65,7 @@ export default function AddToCart({ selectedVariant, cartCount, setCartCount }) 
           disabled={!selectedVariant}
           style={{
             flex: 1, height: "48px",
-            background: selectedVariant ? "#e44d26" : "#ccc",
+            background: selectedVariant ? "#ff6b00" : "#cc4400",
             color: "white", border: "none",
             borderRadius: "8px", fontSize: "14px",
             fontWeight: "600", cursor: selectedVariant ? "pointer" : "not-allowed",
@@ -118,7 +118,7 @@ export default function AddToCart({ selectedVariant, cartCount, setCartCount }) 
             disabled={!selectedVariant}
             style={{
               flex: 1, height: "46px",
-              background: selectedVariant ? "black" : "#ccc",
+              background: selectedVariant ? "#111111" : "#555555",
               color: "white", border: "none",
               borderRadius: "8px", fontSize: "13px",
               fontWeight: "600", cursor: selectedVariant ? "pointer" : "not-allowed",
@@ -130,7 +130,7 @@ export default function AddToCart({ selectedVariant, cartCount, setCartCount }) 
             disabled={!selectedVariant}
             style={{
               flex: 1, height: "46px",
-              background: selectedVariant ? "#e44d26" : "#ccc",
+              background: selectedVariant ? "#ff6b00" : "#cc4400",
               color: "white", border: "none",
               borderRadius: "8px", fontSize: "13px",
               fontWeight: "600", cursor: selectedVariant ? "pointer" : "not-allowed",

@@ -59,7 +59,7 @@ function Stars({ count }) {
   return (
     <div style={{ display: "flex", gap: "2px" }}>
       {[1, 2, 3, 4, 5].map((s) => (
-        <span key={s} style={{ color: s <= count ? "#f5a623" : "#555", fontSize: "14px" }}>
+        <span key={s} style={{ color: s <= count ? "#f5a623" : "#dddddd", fontSize: "14px" }}>
           ★
         </span>
       ))}
@@ -79,7 +79,7 @@ function ReviewItem({ review }) {
 
   return (
     <div style={{
-      borderBottom: "1px solid #333",
+      borderBottom: "1px solid #cccccc",
       paddingBottom: "24px",
       marginBottom: "24px",
     }}>
@@ -110,7 +110,7 @@ function ReviewItem({ review }) {
       </div>
 
       {/* Text */}
-      <div style={{ fontSize: "14px", color: "#aaa", lineHeight: "1.7" }}>
+      <div style={{ fontSize: "14px", color: "#444444", lineHeight: "1.7" }}>
         {review.text}
       </div>
 
@@ -149,14 +149,14 @@ function ReviewItem({ review }) {
           marginTop: "14px",
           borderLeft: "3px solid #f5a623",
           paddingLeft: "14px",
-          background: "#1a1a1a",
+          background: "#f0f0f0",
           borderRadius: "0 6px 6px 0",
           padding: "12px 16px",
         }}>
           <div style={{ fontSize: "11px", color: "#f5a623", fontWeight: "600", letterSpacing: "1px", marginBottom: "6px" }}>
             SELLER REPLY
           </div>
-          <div style={{ fontSize: "13px", color: "#aaa" }}>{review.sellerReply}</div>
+          <div style={{ fontSize: "13px", color: "#444444" }}>{review.sellerReply}</div>
         </div>
       )}
     </div>
@@ -170,8 +170,8 @@ export default function Reviews() {
   const paginated = reviews.slice((page - 1) * REVIEWS_PER_PAGE, page * REVIEWS_PER_PAGE);
 
   return (
-    <div style={{ marginTop: "40px", borderTop: "1px solid #333", paddingTop: "32px" }}>
-      <h2 style={{ marginBottom: "24px", fontSize: "22px" }}>Customer Reviews</h2>
+    <div style={{ marginTop: "40px", borderTop: "1px solid #cccccc", paddingTop: "32px" }}>
+      <h2 style={{ marginBottom: "24px", fontSize: "22px", color:"#111111" }}>Customer Reviews</h2>
 
       {/* Rating Summary */}
       <div style={{ display: "flex", gap: "40px", marginBottom: "32px", flexWrap: "wrap" }}>
@@ -188,7 +188,7 @@ export default function Reviews() {
           {ratingBreakdown.map((row) => (
             <div key={row.star} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px" }}>
               <span style={{ width: "20px", textAlign: "right", color: "#888" }}>{row.star}</span>
-              <div style={{ flex: 1, height: "6px", background: "#333", borderRadius: "3px", overflow: "hidden" }}>
+              <div style={{ flex: 1, height: "6px", background: "#e0e0e0", borderRadius: "3px", overflow: "hidden" }}>
                 <div style={{
                   width: `${(row.count / totalReviews) * 100}%`,
                   height: "100%", background: "#f5a623", borderRadius: "3px",
@@ -214,9 +214,9 @@ export default function Reviews() {
             style={{
               width: "36px", height: "36px",
               borderRadius: "50%",
-              border: "1px solid #444",
+              border: "1px solid #cccccc",
               background: page === i + 1 ? "white" : "transparent",
-              color: page === i + 1 ? "black" : "white",
+              color: page === i + 1 ? "white" : "#111111",
               cursor: "pointer", fontWeight: "600",
               fontSize: "13px",
             }}
