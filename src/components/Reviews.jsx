@@ -86,7 +86,7 @@ function ReviewItem({ review }) {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
         <div>
-          <span style={{ fontWeight: "600", fontSize: "14px" }}>{review.name}</span>
+          <span style={{ fontWeight: "600", fontSize: "14px", color:"#111111" }}>{review.name}</span>
           {review.verified && (
             <span style={{
               marginLeft: "8px", fontSize: "10px",
@@ -105,7 +105,7 @@ function ReviewItem({ review }) {
       <Stars count={review.rating} />
 
       {/* Title */}
-      <div style={{ fontWeight: "600", marginTop: "8px", marginBottom: "6px" }}>
+      <div style={{ fontWeight: "600", marginTop: "8px", marginBottom: "6px", color:"#111111" }}>
         {review.title}
       </div>
 
@@ -148,10 +148,12 @@ function ReviewItem({ review }) {
         <div style={{
           marginTop: "14px",
           borderLeft: "3px solid #f5a623",
-          paddingLeft: "14px",
           background: "#f0f0f0",
           borderRadius: "0 6px 6px 0",
-          padding: "12px 16px",
+          paddingTop: "12px",
+          paddingBottom: "12px",
+          paddingLeft: "20px",
+          paddingRight: "16px"
         }}>
           <div style={{ fontSize: "11px", color: "#f5a623", fontWeight: "600", letterSpacing: "1px", marginBottom: "6px" }}>
             SELLER REPLY
@@ -178,7 +180,7 @@ export default function Reviews() {
 
         {/* Average */}
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: "56px", fontWeight: "300", lineHeight: 1 }}>{avgRating}</div>
+          <div style={{ fontSize: "56px", fontWeight: "300", lineHeight: 1, color:"#111111" }}>{avgRating}</div>
           <Stars count={Math.round(avgRating)} />
           <div style={{ fontSize: "12px", color: "#888", marginTop: "6px" }}>{totalReviews} reviews</div>
         </div>
@@ -215,7 +217,7 @@ export default function Reviews() {
               width: "36px", height: "36px",
               borderRadius: "50%",
               border: "1px solid #cccccc",
-              background: page === i + 1 ? "white" : "transparent",
+              background: page === i + 1 ? "#111111" : "transparent",
               color: page === i + 1 ? "white" : "#111111",
               cursor: "pointer", fontWeight: "600",
               fontSize: "13px",
