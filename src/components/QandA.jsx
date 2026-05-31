@@ -18,7 +18,7 @@ const initialQuestions = [
     id: 3,
     question: "Can I machine wash these after long runs?",
     upvotes: 3,
-    answer: null, // unanswered
+    answer: null,
   },
 ];
 
@@ -56,8 +56,8 @@ export default function QandA() {
   });
 
   return (
-    <div style={{ marginTop: "40px", borderTop: "1px solid #333", paddingTop: "32px" }}>
-      <h2 style={{ marginBottom: "24px", fontSize: "22px" }}>Questions & Answers</h2>
+    <div style={{ marginTop: "40px", borderTop: "1px solid #cccccc", paddingTop: "32px" }}>
+      <h2 style={{ marginBottom: "24px", fontSize: "22px", color: "#111111" }}>Questions & Answers</h2>
 
       {/* Sort */}
       <div style={{ marginBottom: "20px" }}>
@@ -67,9 +67,9 @@ export default function QandA() {
           style={{
             padding: "8px 12px",
             borderRadius: "6px",
-            border: "1px solid #444",
-            background: "#1a1a1a",
-            color: "white",
+            border: "1px solid #cccccc",
+            background: "#ffffff",
+            color: "#111111",
             fontSize: "13px",
             cursor: "pointer",
           }}
@@ -85,9 +85,10 @@ export default function QandA() {
           <div
             key={q.id}
             style={{
-              border: "1px solid #333",
+              border: "1px solid #cccccc",
               borderRadius: "10px",
               padding: "18px 20px",
+              background: "#ffffff",
             }}
           >
             {/* Question Row */}
@@ -96,13 +97,13 @@ export default function QandA() {
                 {/* Q Icon */}
                 <div style={{
                   width: "24px", height: "24px", borderRadius: "50%",
-                  background: "white", color: "black",
+                  background: "#111111", color: "white",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: "12px", fontWeight: "700", flexShrink: 0,
                 }}>
                   Q
                 </div>
-                <div style={{ fontWeight: "500", fontSize: "15px" }}>{q.question}</div>
+                <div style={{ fontWeight: "500", fontSize: "15px", color: "#111111" }}>{q.question}</div>
               </div>
 
               <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", flexShrink: 0 }}>
@@ -110,7 +111,7 @@ export default function QandA() {
                 {!q.answer && (
                   <div style={{
                     fontSize: "10px", fontWeight: "600",
-                    background: "#3a1a1a", color: "#e44d26",
+                    background: "#fde8e0", color: "#e44d26",
                     padding: "3px 8px", borderRadius: "4px",
                     letterSpacing: "0.5px", whiteSpace: "nowrap",
                   }}>
@@ -126,7 +127,7 @@ export default function QandA() {
                     gap: "2px", fontSize: "11px",
                     color: voted.includes(q.id) ? "#4caf82" : "#888",
                     background: "none",
-                    border: `1px solid ${voted.includes(q.id) ? "#4caf82" : "#444"}`,
+                    border: `1px solid ${voted.includes(q.id) ? "#4caf82" : "#cccccc"}`,
                     borderRadius: "6px", padding: "6px 10px",
                     cursor: voted.includes(q.id) ? "default" : "pointer",
                     fontFamily: "inherit",
@@ -142,7 +143,7 @@ export default function QandA() {
             {q.answer && (
               <div style={{
                 marginTop: "14px", paddingTop: "14px",
-                borderTop: "1px solid #333",
+                borderTop: "1px solid #cccccc",
                 display: "flex", gap: "12px",
               }}>
                 <div style={{
@@ -153,7 +154,7 @@ export default function QandA() {
                 }}>
                   A
                 </div>
-                <div style={{ fontSize: "14px", color: "#aaa", lineHeight: "1.6" }}>
+                <div style={{ fontSize: "14px", color: "#444444", lineHeight: "1.6" }}>
                   {q.answer}
                 </div>
               </div>
@@ -164,10 +165,10 @@ export default function QandA() {
 
       {/* Ask a Question */}
       <div style={{
-        border: "1px solid #333", borderRadius: "10px",
-        padding: "18px 20px",
+        border: "1px solid #cccccc", borderRadius: "10px",
+        padding: "18px 20px", background: "#ffffff",
       }}>
-        <div style={{ fontWeight: "600", marginBottom: "12px" }}>Ask a question</div>
+        <div style={{ fontWeight: "600", marginBottom: "12px", color: "#111111" }}>Ask a question</div>
         <div style={{ display: "flex", gap: "10px" }}>
           <input
             type="text"
@@ -177,16 +178,16 @@ export default function QandA() {
             placeholder="Type your question here…"
             style={{
               flex: 1, padding: "10px 14px",
-              borderRadius: "6px", border: "1px solid #444",
-              background: "#1a1a1a", color: "white",
+              borderRadius: "6px", border: "1px solid #cccccc",
+              background: "#f5f5f5", color: "#111111",
               fontSize: "14px", outline: "none",
             }}
           />
           <button
             onClick={handleSubmit}
             style={{
-              padding: "0 20px", background: "white",
-              color: "black", border: "none",
+              padding: "0 20px", background: "#111111",
+              color: "white", border: "none",
               borderRadius: "6px", fontSize: "13px",
               fontWeight: "600", cursor: "pointer",
               letterSpacing: "1px",

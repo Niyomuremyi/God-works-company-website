@@ -7,7 +7,8 @@ function ProductCard({ product }) {
       flex: "0 0 200px",
       borderRadius: "10px",
       overflow: "hidden",
-      border: "1px solid #333",
+      border: "1px solid #cccccc",
+      background: "#ffffff",
       cursor: "pointer",
       transition: "transform 0.2s",
     }}
@@ -28,10 +29,10 @@ function ProductCard({ product }) {
         <div style={{ fontSize: "11px", color: "#888", letterSpacing: "1px", textTransform: "uppercase" }}>
           {product.brand}
         </div>
-        <div style={{ fontSize: "14px", fontWeight: "500", margin: "4px 0" }}>
+        <div style={{ fontSize: "14px", fontWeight: "500", margin: "4px 0", color: "#111111" }}>
           {product.name}
         </div>
-        <div style={{ fontSize: "15px", fontWeight: "600" }}>
+        <div style={{ fontSize: "15px", fontWeight: "600", color: "#111111" }}>
           ${product.price}
         </div>
         <div style={{ fontSize: "12px", color: "#f5a623", marginTop: "4px" }}>
@@ -51,19 +52,19 @@ export default function Carousel({ title, products }) {
   const next = () => setIndex((i) => Math.min(maxIndex, i + 1));
 
   return (
-    <div style={{ marginTop: "40px", borderTop: "1px solid #333", paddingTop: "32px" }}>
+    <div style={{ marginTop: "40px", borderTop: "1px solid #cccccc", paddingTop: "32px" }}>
 
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-        <h2 style={{ fontSize: "22px" }}>{title}</h2>
+        <h2 style={{ fontSize: "22px", color: "#111111" }}>{title}</h2>
         <div style={{ display: "flex", gap: "8px" }}>
           <button
             onClick={prev}
             disabled={index === 0}
             style={{
               width: "36px", height: "36px", borderRadius: "50%",
-              border: "1px solid #444", background: "transparent",
-              color: index === 0 ? "#444" : "white",
+              border: "1px solid #cccccc", background: "transparent",
+              color: index === 0 ? "#cccccc" : "#111111",
               fontSize: "16px", cursor: index === 0 ? "not-allowed" : "pointer",
             }}
           >
@@ -74,8 +75,8 @@ export default function Carousel({ title, products }) {
             disabled={index === maxIndex}
             style={{
               width: "36px", height: "36px", borderRadius: "50%",
-              border: "1px solid #444", background: "transparent",
-              color: index === maxIndex ? "#444" : "white",
+              border: "1px solid #cccccc", background: "transparent",
+              color: index === maxIndex ? "#cccccc" : "#111111",
               fontSize: "16px", cursor: index === maxIndex ? "not-allowed" : "pointer",
             }}
           >

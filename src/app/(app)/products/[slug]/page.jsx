@@ -9,6 +9,21 @@ import Reviews from "@/components/Reviews";
 import QandA from "@/components/QandA";
 import Carousel from "@/components/Carousel";
 
+const product = {
+  brand: "AeroSport",
+  name: "Aero Velocity Pro Runner",
+  rating: 4.7,
+  reviewCount: 284,
+  description: "Built for speed and endurance, the Aero Velocity Pro Runner features a full-length carbon plate for explosive energy return. Engineered with a breathable mesh upper and responsive foam midsole.",
+  features: [
+    "Full-length carbon fibre plate",
+    "Responsive ProFoam midsole",
+    "Breathable engineered mesh upper",
+    "Lightweight at just 198g",
+    "Suitable for road and track",
+  ],
+};
+
 const seller = {
   name: "AeroSport Official",
   rating: 4.9,
@@ -112,7 +127,7 @@ export default function Home() {
         maxWidth: "900px",
         margin: "auto",
         padding: "20px",
-        background: "#1a1a1a",
+        background: "#f5f5f5",
         minHeight: "100vh",
       }}
     >
@@ -131,7 +146,7 @@ export default function Home() {
           <span
             style={{
               background: "white",
-              color: "black",
+              color: "#111111",
               borderRadius: "50%",
               padding: "2px 8px",
               fontSize: "13px",
@@ -142,6 +157,21 @@ export default function Home() {
           </span>
         </div>
       </div>
+
+      {/* Product Info */}
+        <div style={{ marginBottom: "16px" }}>
+          <div style={{ fontSize: "12px", color: "#888", letterSpacing: "1px", textTransform: "uppercase" }}>
+            {product.brand}
+          </div>
+          <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#111111", marginBottom: "8px" }}>
+            {product.name}
+          </h1>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+            <span style={{ color: "#f5a623" }}>{"★".repeat(Math.floor(product.rating))}{"☆".repeat(5 - Math.floor(product.rating))}</span>
+            <span style={{ fontSize: "13px", color: "#888" }}>{product.rating} ({product.reviewCount} reviews)</span>
+          </div>
+          <p style={{ fontSize: "14px", color: "#444444", lineHeight: "1.8" }}>{product.description}</p>
+        </div>
 
       {/* Image Gallery */}
       <ImageGallery selectedVariant={selectedVariant} />

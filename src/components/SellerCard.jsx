@@ -9,11 +9,11 @@ export default function SellerCard({ seller }) {
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      border: "1px solid #eee",
+      border: "1px solid #cccccc",
       borderRadius: "10px",
       padding: "16px",
       marginTop: "24px",
-      gap: "16px",
+      gap: "16px"
     }}>
 
       {/* Left: Logo + Info */}
@@ -34,7 +34,7 @@ export default function SellerCard({ seller }) {
 
         {/* Store Info */}
         <div>
-          <div style={{ fontWeight: "600", fontSize: "15px" }}>{seller.name}</div>
+          <div style={{ fontWeight: "600", fontSize: "15px", color:"#111111" }}>{seller.name}</div>
           <div style={{ fontSize: "13px", color: "#888", marginTop: "2px" }}>
             ⭐ {seller.rating} · {seller.followers.toLocaleString()} followers
           </div>
@@ -48,7 +48,7 @@ export default function SellerCard({ seller }) {
   onClick={() => window.open(seller.storeUrl, "_blank")}
   style={{
     fontSize: "12px", fontWeight: "600",
-    color: "white", textDecoration: "underline",
+    color: "#111111", textDecoration: "underline",
     letterSpacing: "0.5px", background: "none",
     border: "none", cursor: "pointer", padding: 0,
   }}
@@ -60,9 +60,9 @@ export default function SellerCard({ seller }) {
   style={{
     padding: "6px 16px",
     borderRadius: "20px",
-    border: "1px solid white",
-    background: following ? "white" : "transparent",
-    color: following ? "black" : "white",
+    border: "1px solid #111111",
+    background: following ? "#111111" : "transparent",
+    color: following ? "white" : "#111111",
     fontSize: "12px", fontWeight: "600",
     cursor: "pointer",
     transition: "all 0.2s",

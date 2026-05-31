@@ -63,11 +63,11 @@ export default function VariantSelector({ onChange }) {
     <div style={{ marginTop: "20px" }}>
 
       {/* Price */}
-      <h2 style={{ marginBottom: "12px" }}>${selectedColor.price}</h2>
+      <h2 style={{ marginBottom: "12px", color:"#111111" }}>${selectedColor.price}</h2>
 
       {/* Color Swatches */}
-      <h3 style={{ marginBottom: "8px" }}>
-        Color: <span style={{ fontWeight: "normal" }}>{selectedColor.label}</span>
+      <h3 style={{ marginBottom: "8px", color:"#111111" }}>
+        Color: <span style={{ fontWeight: "normal", color:"#444444"}}>{selectedColor.label}</span>
       </h3>
       <div style={{ display: "flex", gap: "10px", marginBottom: "16px" }}>
         {variants.map((v, index) => (
@@ -93,7 +93,7 @@ export default function VariantSelector({ onChange }) {
       </div>
 
       {/* Size Grid */}
-      <h3 style={{ marginBottom: "8px" }}>
+      <h3 style={{ marginBottom: "8px", color:"#111111" }}>
         Size:{" "}
         <span style={{ fontWeight: "normal" }}>
           {selectedSize ? selectedSize : "—"}
