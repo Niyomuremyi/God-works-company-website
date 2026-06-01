@@ -171,6 +171,14 @@ export default function Home() {
             <span style={{ fontSize: "13px", color: "#888" }}>{product.rating} ({product.reviewCount} reviews)</span>
           </div>
           <p style={{ fontSize: "14px", color: "#444444", lineHeight: "1.8" }}>{product.description}</p>
+           
+          <ul style={{ paddingLeft: "18px", marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px", listStyleType: "disc" }}>
+            {product.features.map((feature, index) => (
+              <li key={index} style={{ fontSize: "13px", color: "#444444" }}>
+                {feature}
+              </li>
+            ))}
+        </ul>
         </div>
 
       {/* Image Gallery */}
