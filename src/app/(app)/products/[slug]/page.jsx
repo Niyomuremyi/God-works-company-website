@@ -14,6 +14,9 @@ const product = {
   name: "Aero Velocity Pro Runner",
   rating: 4.7,
   reviewCount: 284,
+  price:189,
+  discountPrice:149,
+  stock:8,
   description: "Built for speed and endurance, the Aero Velocity Pro Runner features a full-length carbon plate for explosive energy return. Engineered with a breathable mesh upper and responsive foam midsole.",
   features: [
     "Full-length carbon fibre plate",
@@ -121,6 +124,16 @@ export default function Home() {
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [cartCount, setCartCount] = useState(0);
 
+ const [copied, setCopied] = useState(false);
+
+const discountPercent = Math.round(((product.price - product.discountPrice) / product.price) * 100);
+
+const handleShare = () => {
+  navigator.clipboard.writeText(window.location.href);
+  setCopied(true);
+  setTimeout(() => setCopied(false), 2000);
+}; 
+
   return (
     <div
       style={{
@@ -157,11 +170,25 @@ export default function Home() {
           </span>
         </div>
       </div>
+      
+     {/* Breadcrumb */}
+        <div style={{ fontSize: "12px", color: "#888", marginBottom: "16px" }}>
+          <a href="/" style={{ color: "#888", textDecoration: "none" }}>Home</a>
+          <span style={{ margin: "0 6px" }}>›</span>
+          <a href="/shoes" style={{ color: "#888", textDecoration: "none" }}>Shoes</a>
+          <span style={{ margin: "0 6px" }}>›</span>
+          <span style={{ color: "#111" }}>{product.name}</span>
+        </div>
 
       {/* Product Info */}
         <div style={{ marginBottom: "16px" }}>
-          <div style={{ fontSize: "12px", color: "#888", letterSpacing: "1px", textTransform: "uppercase" }}>
-            {product.brand}
+         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ fontSize: "12px", color: "#888", letterSpacing: "1px", textTransform: "uppercase" }}>
+              {product.brand}
+            </div>
+            <button onClick={handleShare} style={{ background: "none", border: "1px solid #ddd", borderRadius: "8px", padding: "4px 12px", fontSize: "12px", cursor: "pointer", color: "#555" }}>
+              {copied ? "✅ Link copied!" : "🔗 Share"}
+            </button>
           </div>
           <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#111111", marginBottom: "8px" }}>
             {product.name}
@@ -170,6 +197,23 @@ export default function Home() {
             <span style={{ color: "#f5a623" }}>{"★".repeat(Math.floor(product.rating))}{"☆".repeat(5 - Math.floor(product.rating))}</span>
             <span style={{ fontSize: "13px", color: "#888" }}>{product.rating} ({product.reviewCount} reviews)</span>
           </div>
+
+        {/* Price */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+            <span style={{ fontSize: "22px", fontWeight: "700", color: "#111" }}>${product.discountPrice}</span>
+            <span style={{ fontSize: "14px", color: "#aaa", textDecoration: "line-through" }}>${product.price}</span>
+            <span style={{ background: "#e8f5e9", color: "#2e7d32", fontSize: "12px", fontWeight: "600", padding: "2px 8px", borderRadius: "12px" }}>{discountPercent}% OFF</span>
+          </div>
+
+          {/* Stock */}
+          <div style={{ marginBottom: "16px" }}>
+            {product.stock > 10 ? (
+              <span style={{ fontSize: "13px", color: "#2e7d32", fontWeight: "500" }}>✔ In Stock</span>
+            ) : (
+              <span style={{ fontSize: "13px", color: "#e65100", fontWeight: "500" }}>⚠ Only {product.stock} left!</span>
+            )}
+          </div>
+
           <p style={{ fontSize: "14px", color: "#444444", lineHeight: "1.8" }}>{product.description}</p>
            
           <ul style={{ paddingLeft: "18px", marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px", listStyleType: "disc" }}>
