@@ -14,8 +14,6 @@ const product = {
   name: "Aero Velocity Pro Runner",
   rating: 4.7,
   reviewCount: 284,
-  price:189,
-  discountPrice:149,
   stock:8,
   description: "Built for speed and endurance, the Aero Velocity Pro Runner features a full-length carbon plate for explosive energy return. Engineered with a breathable mesh upper and responsive foam midsole.",
   features: [
@@ -42,6 +40,7 @@ const relatedProducts = [
     price: 110,
     rating: 4,
     image: "/product-images/shoe1.jpg",
+    slug: "velocity-trail-x2"
   },
   {
     id: 2,
@@ -50,6 +49,7 @@ const relatedProducts = [
     price: 145,
     rating: 5,
     image: "/product-images/shoe2.jpg",
+    slug: "ultralight-4"
   },
   {
     id: 3,
@@ -58,6 +58,7 @@ const relatedProducts = [
     price: 200,
     rating: 4,
     image: "/product-images/shoe3.jpg",
+    slug: "carbon-elite-pro"
   },
   {
     id: 4,
@@ -66,6 +67,7 @@ const relatedProducts = [
     price: 95,
     rating: 4,
     image: "/product-images/shoe1.jpg",
+    slug: "cloud-cushion-2"
   },
   {
     id: 5,
@@ -74,6 +76,7 @@ const relatedProducts = [
     price: 130,
     rating: 5,
     image: "/product-images/shoe2.jpg",
+    slug: "speedforce-v3"
   },
 ];
 
@@ -85,6 +88,7 @@ const alsoBought = [
     price: 22,
     rating: 5,
     image: "/product-images/shoe3.jpg",
+    slug: "performance-socks-3-pack"
   },
   {
     id: 2,
@@ -93,6 +97,7 @@ const alsoBought = [
     price: 35,
     rating: 4,
     image: "/product-images/shoe1.jpg",
+    slug: "insole-pro-arch-support"
   },
   {
     id: 3,
@@ -101,6 +106,7 @@ const alsoBought = [
     price: 280,
     rating: 5,
     image: "/product-images/shoe2.jpg",
+    slug: "running-gps-watch-s4"
   },
   {
     id: 4,
@@ -109,6 +115,7 @@ const alsoBought = [
     price: 60,
     rating: 4,
     image: "/product-images/shoe3.jpg",
+    slug: "vest-pack-51"
   },
   {
     id: 5,
@@ -117,6 +124,7 @@ const alsoBought = [
     price: 45,
     rating: 5,
     image: "/product-images/shoe1.jpg",
+    slug: "race-singlet-v2"
   },
 ];
 
@@ -125,8 +133,6 @@ export default function Home() {
   const [cartCount, setCartCount] = useState(0);
 
  const [copied, setCopied] = useState(false);
-
-const discountPercent = Math.round(((product.price - product.discountPrice) / product.price) * 100);
 
 const handleShare = () => {
   navigator.clipboard.writeText(window.location.href);
@@ -198,12 +204,6 @@ const handleShare = () => {
             <span style={{ fontSize: "13px", color: "#888" }}>{product.rating} ({product.reviewCount} reviews)</span>
           </div>
 
-        {/* Price */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-            <span style={{ fontSize: "22px", fontWeight: "700", color: "#111" }}>${product.discountPrice}</span>
-            <span style={{ fontSize: "14px", color: "#aaa", textDecoration: "line-through" }}>${product.price}</span>
-            <span style={{ background: "#e8f5e9", color: "#2e7d32", fontSize: "12px", fontWeight: "600", padding: "2px 8px", borderRadius: "12px" }}>{discountPercent}% OFF</span>
-          </div>
 
           {/* Stock */}
           <div style={{ marginBottom: "16px" }}>

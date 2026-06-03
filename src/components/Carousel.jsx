@@ -3,7 +3,7 @@ import { useState } from "react";
 
 function ProductCard({ product }) {
   return (
-    <div style={{
+    <a href={`/products/${product.slug}`} style={{
       flex: "0 0 200px",
       borderRadius: "10px",
       overflow: "hidden",
@@ -11,6 +11,8 @@ function ProductCard({ product }) {
       background: "#ffffff",
       cursor: "pointer",
       transition: "transform 0.2s",
+      textDecoration: "none",
+      display: "block",
     }}
       onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-4px)"}
       onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
@@ -39,7 +41,7 @@ function ProductCard({ product }) {
           {"★".repeat(Math.round(product.rating))}{"☆".repeat(5 - Math.round(product.rating))}
         </div>
       </div>
-    </div>
+    </a>
   );
 }
 
