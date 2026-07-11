@@ -141,89 +141,71 @@ const handleShare = () => {
 }; 
 
   return (
-    <div
-      style={{
-        maxWidth: "900px",
-        margin: "auto",
-        padding: "20px",
-        background: "#f5f5f5",
-        minHeight: "100vh",
-      }}
-    >
-      {/* Nav */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "24px",
-        }}
-      >
+   <div className="max-w-[900px] mx-auto p-5 bg-neutral-100 min-h-screen">
+     {/* Nav */}
+      <div className="flex justify-between items-center mb-6">
         <h1>Product Page</h1>
-        <div style={{ fontSize: "18px", fontWeight: "600", cursor: "pointer" }}>
+        <div className="text-lg font-semibold cursor-pointer">
           🛒{" "}
-          <span
-            style={{
-              background: "white",
-              color: "#111111",
-              borderRadius: "50%",
-              padding: "2px 8px",
-              fontSize: "13px",
-              marginLeft: "4px",
-            }}
-          >
+          <span className="bg-white text-neutral-900 rounded-full px-2 py-0.5 text-xs ml-1">
             {cartCount}
           </span>
         </div>
       </div>
-      
-     {/* Breadcrumb */}
-        <div style={{ fontSize: "12px", color: "#888", marginBottom: "16px" }}>
-          <a href="/" style={{ color: "#888", textDecoration: "none" }}>Home</a>
-          <span style={{ margin: "0 6px" }}>›</span>
-          <a href="/shoes" style={{ color: "#888", textDecoration: "none" }}>Shoes</a>
-          <span style={{ margin: "0 6px" }}>›</span>
-          <span style={{ color: "#111" }}>{product.name}</span>
-        </div>
+
+      {/* Breadcrumb */}
+      <div className="text-xs text-neutral-500 mb-4">
+        <a href="/" className="text-neutral-500 no-underline">Home</a>
+        <span className="mx-1.5">›</span>
+        <a href="/shoes" className="text-neutral-500 no-underline">Shoes</a>
+        <span className="mx-1.5">›</span>
+        <span className="text-neutral-900">{product.name}</span>
+      </div>
 
       {/* Product Info */}
-        <div style={{ marginBottom: "16px" }}>
-         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ fontSize: "12px", color: "#888", letterSpacing: "1px", textTransform: "uppercase" }}>
-              {product.brand}
-            </div>
-            <button onClick={handleShare} style={{ background: "none", border: "1px solid #ddd", borderRadius: "8px", padding: "4px 12px", fontSize: "12px", cursor: "pointer", color: "#555" }}>
-              {copied ? "✅ Link copied!" : "🔗 Share"}
-            </button>
+      <div className="mb-4">
+        <div className="flex justify-between items-center">
+          <div className="text-xs text-neutral-500 tracking-wide uppercase">
+            {product.brand}
           </div>
-          <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#111111", marginBottom: "8px" }}>
-            {product.name}
-          </h1>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
-            <span style={{ color: "#f5a623" }}>{"★".repeat(Math.floor(product.rating))}{"☆".repeat(5 - Math.floor(product.rating))}</span>
-            <span style={{ fontSize: "13px", color: "#888" }}>{product.rating} ({product.reviewCount} reviews)</span>
-          </div>
-
-
-          {/* Stock */}
-          <div style={{ marginBottom: "16px" }}>
-            {product.stock > 10 ? (
-              <span style={{ fontSize: "13px", color: "#2e7d32", fontWeight: "500" }}>✔ In Stock</span>
-            ) : (
-              <span style={{ fontSize: "13px", color: "#e65100", fontWeight: "500" }}>⚠ Only {product.stock} left!</span>
-            )}
-          </div>
-
-          <p style={{ fontSize: "14px", color: "#444444", lineHeight: "1.8" }}>{product.description}</p>
-           
-          <ul style={{ paddingLeft: "18px", marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px", listStyleType: "disc" }}>
-            {product.features.map((feature, index) => (
-              <li key={index} style={{ fontSize: "13px", color: "#444444" }}>
-                {feature}
-              </li>
-            ))}
-        </ul>
+          <button
+            onClick={handleShare}
+            className="bg-transparent border border-neutral-300 rounded-lg px-3 py-1 text-xs cursor-pointer text-neutral-600"
+          >
+            {copied ? "✅ Link copied!" : "🔗 Share"}
+          </button>
         </div>
+
+        <h1 className="text-2xl font-bold text-neutral-900 mb-2">
+          {product.name}
+        </h1>
+
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-amber-500">
+            {"★".repeat(Math.floor(product.rating))}{"☆".repeat(5 - Math.floor(product.rating))}
+          </span>
+          <span className="text-xs text-neutral-500">{product.rating} ({product.reviewCount} reviews)</span>
+        </div>
+
+        {/* Stock */}
+        <div className="mb-4">
+          {product.stock > 10 ? (
+            <span className="text-xs text-green-700 font-medium">✔ In Stock</span>
+          ) : (
+            <span className="text-xs text-orange-700 font-medium">⚠ Only {product.stock} left!</span>
+          )}
+        </div>
+
+        <p className="text-sm text-neutral-700 leading-7">{product.description}</p>
+
+        <ul className="pl-4 mt-3 flex flex-col gap-1.5 list-disc">
+          {product.features.map((feature, index) => (
+            <li key={index} className="text-xs text-neutral-700">
+              {feature}
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {/* Image Gallery */}
       <ImageGallery selectedVariant={selectedVariant} />
