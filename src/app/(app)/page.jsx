@@ -1,115 +1,65 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Suspense } from "react";
 import { ProductSection } from "@/components/app/ProductSection";
 import { CategoryTiles } from "@/components/app/CategoryTiles";
 import { FeaturedCarousel } from "@/components/app/FeaturedCarousel";
 import { FeaturedCarouselSkeleton } from "@/components/app/FeaturedCarouselSkeleton";
 
-// Dummy categories
 const categories = [
-  { _id: "1", name: "Chairs", slug: "chairs" },
-  { _id: "2", name: "Tables", slug: "tables" },
-  { _id: "3", name: "Sofas", slug: "sofas" },
-  { _id: "4", name: "Beds", slug: "beds" },
-];
-
-// Dummy products
-const products = [
-  {
-    _id: "p1",
-    name: "Modern Chair",
-    price: 129.99,
-    slug: "modern-chair",
-    stock: 12,
-    category: {
-      title: "Chairs",
-    },
-    images: [
-      {
-        _key: "img1",
-        asset: {
-          url: "https://picsum.photos/600/400?random=5",
-        },
-      },
-    ],
-  },
-  {
-    _id: "p2",
-    name: "Wooden Table",
-    price: 249.99,
-    slug: "wooden-table",
-    stock: 8,
-    category: {
-      title: "Tables",
-    },
-    images: [
-      {
-        _key: "img2",
-        asset: {
-          url: "https://picsum.photos/600/400?random=6",
-        },
-      },
-    ],
-  },
-  {
-    _id: "p3",
-    name: "Luxury Sofa",
-    price: 599.99,
-    slug: "luxury-sofa",
-    stock: 4,
-    category: {
-      title: "Sofas",
-    },
-    images: [
-      {
-        _key: "img3",
-        asset: {
-          url: "https://picsum.photos/600/400?random=7",
-        },
-      },
-    ],
-  },
-  {
-    _id: "p4",
-    name: "Queen Bed",
-    price: 399.99,
-    slug: "queen-bed",
-    stock: 0,
-    category: {
-      title: "Beds",
-    },
-    images: [
-      {
-        _key: "img4",
-        asset: {
-          url: "https://picsum.photos/600/400?random=8",
-        },
-      },
-    ],
-  },
-];
-
-// Dummy featured products
-const featuredProducts = [
-  products[0],
-  products[2],
+  { _id: "1", name: "All", slug: "all" },
 ];
 
 export default function HomePage() {
-  const categorySlug = ""; // You can set a default category here
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const categorySlug = "";
   const searchQuery = "";
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const res = await fetch("http://localhost:4000/api/products");
+        const data = await res.json();
+
+        const mapped = data.map((p) => ({
+          _id: String(p.id),
+          name: p.name,
+          price: Number(p.price),
+          slug: p.slug,
+          stock: p.stock,
+          category: { title: p.seller || "General" },
+          images: [
+            {
+              _key: `img-${p.id}`,
+              asset: { url: p.image },
+            },
+          ],
+        }));
+
+        setProducts(mapped);
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProducts();
+  }, []);
+
+  const featuredProducts = products.slice(0, 2);
+
+  if (loading) return <div className="p-5">Loading...</div>;
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
-      {/* Featured Products Carousel */}
       {featuredProducts.length > 0 && (
         <Suspense fallback={<FeaturedCarouselSkeleton />}>
           <FeaturedCarousel products={featuredProducts} />
         </Suspense>
       )}
 
-      {/* Page Banner */}
       <div className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
         <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -120,7 +70,6 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Category Tiles */}
         <div className="mt-6">
           <CategoryTiles
             categories={categories}
