@@ -36,3 +36,4 @@ export const alsoBought = [
   { id: 4, brand: "HydroRun", name: "Vest Pack 5L", price: 60, rating: 4, image: "/product-images/shoe3.jpg", slug: "vest-pack-51" },
   { id: 5, brand: "AeroSport", name: "Race Singlet V2", price: 45, rating: 5, image: "/product-images/shoe1.jpg", slug: "race-singlet-v2" },
 ];
+
