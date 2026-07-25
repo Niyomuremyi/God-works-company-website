@@ -19,8 +19,24 @@ app.get("/", (req, res) => {
 
 app.get("/api/products", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM products");
-    res.json(result.rows);
+    const productsResult = await pool.query("SELECT * FROM products");
+    const products = productsResult.rows;
+
+    for (const product of products) {
+      const featuresResult = await pool.query(
+        "SELECT feature FROM product_features WHERE product_id = $1",
+        [product.id],
+      );
+      product.features = featuresResult.rows.map((f) => f.feature);
+
+      const variantsResult = await pool.query(
+        "SELECT id, color, size, stock FROM product_variants WHERE product_id = $1",
+        [product.id],
+      );
+      product.variants = variantsResult.rows;
+    }
+
+    res.json(products);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Something went wrong" });
