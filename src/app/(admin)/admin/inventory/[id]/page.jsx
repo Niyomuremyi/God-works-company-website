@@ -5,33 +5,9 @@ import Link from "next/link";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-const MATERIALS = [
-  { value: "wood", label: "Wood" },
-  { value: "metal", label: "Metal" },
-  { value: "fabric", label: "Fabric" },
-  { value: "leather", label: "Leather" },
-  { value: "glass", label: "Glass" },
-];
-
-const COLORS = [
-  { value: "black", label: "Black" },
-  { value: "white", label: "White" },
-  { value: "oak", label: "Oak" },
-  { value: "walnut", label: "Walnut" },
-  { value: "grey", label: "Grey" },
-  { value: "natural", label: "Natural" },
-];
 
 export default function ProductDetailPage({ params }) {
   const { id } = use(params);
@@ -42,13 +18,35 @@ export default function ProductDetailPage({ params }) {
     slug: "sample-product",
     description: "",
     price: 0,
-    stock: 0,
-    material: "",
-    color: "",
-    dimensions: "",
+    image:"",
+    seller: "",
+    features: [""],
+    variants: [{ color: "", size: "", stock: 0 }],
     featured: false,
     assemblyRequired: false,
   });
+
+  const [isSaving, setIsSaving] = useState(false);
+
+    const handleSave = async () => {
+      setIsSaving(true);
+      try {
+        const res = await fetch("https://god-works-company-website-production.up.railway.app/api/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(product),
+        });
+
+        if (!res.ok) throw new Error("Failed to save product");
+
+        alert("Product saved successfully!");
+      } catch (err) {
+        console.error(err);
+        alert("Error saving product");
+      } finally {
+        setIsSaving(false);
+      }
+    };
 
   const updateField = (field, value) => {
     setProduct((prev) => ({
@@ -56,6 +54,50 @@ export default function ProductDetailPage({ params }) {
       [field]: value,
     }));
   };
+
+  const updateFeature = (index, value) => {
+      setProduct((prev) => {
+        const newFeatures = [...prev.features];
+        newFeatures[index] = value;
+        return { ...prev, features: newFeatures };
+      });
+      };
+
+      const addFeature = () => {
+        setProduct((prev) => ({
+          ...prev,
+          features: [...prev.features, ""],
+        }));
+      };
+
+      const removeFeature = (index) => {
+        setProduct((prev) => ({
+          ...prev,
+          features: prev.features.filter((_, i) => i !== index),
+        }));
+      };
+
+      const updateVariant = (index, field, value) => {
+        setProduct((prev) => {
+          const newVariants = [...prev.variants];
+          newVariants[index] = { ...newVariants[index], [field]: value };
+          return { ...prev, variants: newVariants };
+        });
+      };
+
+      const addVariant = () => {
+        setProduct((prev) => ({
+          ...prev,
+          variants: [...prev.variants, { color: "", size: "", stock: 0 }],
+        }));
+      };
+
+      const removeVariant = (index) => {
+        setProduct((prev) => ({
+          ...prev,
+          variants: prev.variants.filter((_, i) => i !== index),
+        }));
+      };
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -106,6 +148,24 @@ export default function ProductDetailPage({ params }) {
                 </div>
 
                 <div>
+                <Label>Image URL</Label>
+                <Input
+                  value={product.image}
+                  onChange={(e) => updateField("image", e.target.value)}
+                  placeholder="/product-images/example.jpg"
+                />
+              </div>
+
+                <div>
+                  <Label>Seller</Label>
+                  <Input
+                    value={product.seller}
+                    onChange={(e) => updateField("seller", e.target.value)}
+                    placeholder="Seller or brand name"
+                  />
+                </div>
+
+                <div>
                   <Label>Description</Label>
                   <Textarea
                     value={product.description}
@@ -118,131 +178,108 @@ export default function ProductDetailPage({ params }) {
 
               </div>
             </div>
+            
+          {/* Features */}
+            <div className="rounded-xl border p-6">
+              <h2 className="mb-4 font-semibold">Features</h2>
 
+              <div className="space-y-3">
+                {product.features.map((feature, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={feature}
+                      onChange={(e) => updateFeature(index, e.target.value)}
+                      placeholder="e.g. Breathable mesh upper"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeFeature(index)}
+                      className="px-3 text-sm text-red-600 hover:underline"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={addFeature}
+                  className="text-sm font-medium text-blue-600 hover:underline"
+                >
+                  + Add Feature
+                </button>
+              </div>
+            </div>
+
+            {/* Variants */}
+            <div className="rounded-xl border p-6">
+              <h2 className="mb-4 font-semibold">Variants</h2>
+
+              <div className="space-y-3">
+                {product.variants.map((variant, index) => (
+                  <div key={index} className="grid grid-cols-4 gap-2 items-center">
+                    <Input
+                      value={variant.color}
+                      onChange={(e) => updateVariant(index, "color", e.target.value)}
+                      placeholder="Color"
+                    />
+                    <Input
+                      value={variant.size}
+                      onChange={(e) => updateVariant(index, "size", e.target.value)}
+                      placeholder="Size"
+                    />
+                    <Input
+                      type="number"
+                      value={variant.stock}
+                      onChange={(e) =>
+                        updateVariant(index, "stock", parseInt(e.target.value) || 0)
+                      }
+                      placeholder="Stock"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeVariant(index)}
+                      className="text-sm text-red-600 hover:underline"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={addVariant}
+                  className="text-sm font-medium text-blue-600 hover:underline"
+                >
+                  + Add Variant
+                </button>
+              </div>
+            </div>
+          
             {/* Pricing */}
             <div className="rounded-xl border p-6">
-              <h2 className="mb-4 font-semibold">Pricing & Inventory</h2>
+              <h2 className="mb-4 font-semibold">Pricing</h2>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-
-                <div>
-                  <Label>Price (£)</Label>
-                  <Input
-                    type="number"
-                    value={product.price}
-                    onChange={(e) =>
-                      updateField("price", parseFloat(e.target.value) || 0)
-                    }
-                  />
-                </div>
-
-                <div>
-                  <Label>Stock</Label>
-                  <Input
-                    type="number"
-                    value={product.stock}
-                    onChange={(e) =>
-                      updateField("stock", parseInt(e.target.value) || 0)
-                    }
-                  />
-                </div>
-
-              </div>
-            </div>
-
-            {/* Attributes */}
-            <div className="rounded-xl border p-6">
-              <h2 className="mb-4 font-semibold">Attributes</h2>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-
-                <div>
-                  <Label>Material</Label>
-                  <Select
-                    value={product.material}
-                    onValueChange={(value) => updateField("material", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select material" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {MATERIALS.map((m) => (
-                        <SelectItem key={m.value} value={m.value}>
-                          {m.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Color</Label>
-                  <Select
-                    value={product.color}
-                    onValueChange={(value) => updateField("color", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select color" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COLORS.map((c) => (
-                        <SelectItem key={c.value} value={c.value}>
-                          {c.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="sm:col-span-2">
-                  <Label>Dimensions</Label>
-                  <Input
-                    value={product.dimensions}
-                    onChange={(e) =>
-                      updateField("dimensions", e.target.value)
-                    }
-                  />
-                </div>
-
-              </div>
-            </div>
-
-            {/* Options */}
-            <div className="rounded-xl border p-6">
-              <h2 className="mb-4 font-semibold">Options</h2>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Featured Product</p>
-                  <p className="text-sm text-zinc-500">
-                    Show on homepage
-                  </p>
-                </div>
-
-                <Switch
-                  checked={product.featured}
-                  onCheckedChange={(v) => updateField("featured", v)}
-                />
-              </div>
-
-              <div className="mt-4 flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Assembly Required</p>
-                  <p className="text-sm text-zinc-500">
-                    Customer assembles
-                  </p>
-                </div>
-
-                <Switch
-                  checked={product.assemblyRequired}
-                  onCheckedChange={(v) =>
-                    updateField("assemblyRequired", v)
+              <div>
+                <Label>Price (£)</Label>
+                <Input
+                  type="number"
+                  value={product.price}
+                  onChange={(e) =>
+                    updateField("price", parseFloat(e.target.value) || 0)
                   }
                 />
               </div>
             </div>
 
+            
+
           </div>
+
+          {/* Save */}
+          <Button onClick={handleSave} disabled={isSaving} className="w-full">
+            {isSaving ? "Saving..." : "Save Product"}
+          </Button>
 
           {/* Sidebar */}
           <div className="space-y-6">
