@@ -1,44 +1,128 @@
 "use client";
-import { useState, useEffect } from "react";
 
-export default function AddToCart({ selectedVariant, cartCount, setCartCount }) {
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+export default function AddToCart({
+  productId,
+  productSlug,
+  selectedVariant,
+  cartCount,
+  setCartCount,
+}) {
+  const router = useRouter();
+
   const [qty, setQty] = useState(1);
   const [toast, setToast] = useState(false);
   const [showSticky, setShowSticky] = useState(false);
 
-  // Show sticky bar only when user scrolls down
   useEffect(() => {
     const handleScroll = () => {
       setShowSticky(window.scrollY > 300);
     };
+
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const handleAddToCart = () => {
     if (!selectedVariant) return;
+
     setCartCount((prev) => prev + qty);
+
     setToast(true);
-    setTimeout(() => setToast(false), 2500);
+
+    setTimeout(() => {
+      setToast(false);
+    }, 2500);
+  };
+
+  const handleBuyNow = () => {
+    if (!productId || !productSlug) {
+      console.error(
+        "AddToCart: productId and productSlug are required for Buy Now."
+      );
+      return;
+    }
+
+    const params = new URLSearchParams({
+      slug: productSlug,
+      productId: String(productId),
+      qty: String(qty),
+    });
+
+    if (selectedVariant?.id) {
+      params.set("variantId", String(selectedVariant.id));
+    }
+
+    router.push(`/checkout?${params.toString()}`);
   };
 
   return (
     <div style={{ marginTop: "20px", paddingBottom: "80px" }}>
+      {/* Quantity */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          marginBottom: "16px",
+        }}
+      >
+        <span style={{ fontWeight: "500", color: "#111111" }}>
+          Quantity:
+        </span>
 
-      {/* Quantity Stepper */}
-      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
-        <span style={{ fontWeight: "500", color:"#111111" }}>Quantity:</span>
-        <div style={{ display: "flex", alignItems: "center", border: "1px solid gray", borderRadius: "6px", overflow: "hidden", background: "#ffffff" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            border: "1px solid gray",
+            borderRadius: "6px",
+            overflow: "hidden",
+            background: "#ffffff",
+          }}
+        >
           <button
             onClick={() => setQty((prev) => Math.max(1, prev - 1))}
-            style={{ width: "36px", height: "36px", background: "none", border: "none", fontSize: "18px", cursor: "pointer", color:"#111111" }}
+            style={{
+              width: "36px",
+              height: "36px",
+              background: "none",
+              border: "none",
+              fontSize: "18px",
+              cursor: "pointer",
+              color: "#111111",
+            }}
           >
             −
           </button>
-          <span style={{ width: "36px", textAlign: "center", fontWeight: "500", color:"#111111" }}>{qty}</span>
+
+          <span
+            style={{
+              width: "36px",
+              textAlign: "center",
+              fontWeight: "500",
+              color: "#111111",
+            }}
+          >
+            {qty}
+          </span>
+
           <button
             onClick={() => setQty((prev) => Math.min(10, prev + 1))}
-            style={{ width: "36px", height: "36px", background: "none", border: "none", fontSize: "18px", cursor: "pointer", color:"#111111" }}
+            style={{
+              width: "36px",
+              height: "36px",
+              background: "none",
+              border: "none",
+              fontSize: "18px",
+              cursor: "pointer",
+              color: "#111111",
+            }}
           >
             +
           </button>
@@ -46,29 +130,45 @@ export default function AddToCart({ selectedVariant, cartCount, setCartCount }) 
       </div>
 
       {/* Main Buttons */}
-      <div style={{ display: "flex", gap: "12px", marginBottom: "16px" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "12px",
+          marginBottom: "16px",
+        }}
+      >
         <button
           onClick={handleAddToCart}
           disabled={!selectedVariant}
           style={{
-            flex: 1, height: "48px",
+            flex: 1,
+            height: "48px",
             background: selectedVariant ? "#111111" : "#555555",
-            color: "white", border: "none",
-            borderRadius: "8px", fontSize: "14px",
-            fontWeight: "600", cursor: selectedVariant ? "pointer" : "not-allowed",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            fontSize: "14px",
+            fontWeight: "600",
+            cursor: selectedVariant ? "pointer" : "not-allowed",
             letterSpacing: "1px",
           }}
         >
           Add to Cart
         </button>
+
         <button
+          onClick={handleBuyNow}
           disabled={!selectedVariant}
           style={{
-            flex: 1, height: "48px",
+            flex: 1,
+            height: "48px",
             background: selectedVariant ? "#ff6b00" : "#cc4400",
-            color: "white", border: "none",
-            borderRadius: "8px", fontSize: "14px",
-            fontWeight: "600", cursor: selectedVariant ? "pointer" : "not-allowed",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            fontSize: "14px",
+            fontWeight: "600",
+            cursor: selectedVariant ? "pointer" : "not-allowed",
             letterSpacing: "1px",
           }}
         >
@@ -78,23 +178,31 @@ export default function AddToCart({ selectedVariant, cartCount, setCartCount }) 
 
       {/* Toast */}
       {toast && (
-        <div style={{
-          position: "fixed", bottom: "24px", left: "50%",
-          transform: "translateX(-50%)",
-          background: "#1a1a1a", color: "white",
-          padding: "12px 24px", borderRadius: "8px",
-          fontSize: "14px", fontWeight: "500",
-          zIndex: 9999, boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
-        }}>
+        <div
+          style={{
+            position: "fixed",
+            bottom: "24px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "#1a1a1a",
+            color: "white",
+            padding: "12px 24px",
+            borderRadius: "8px",
+            fontSize: "14px",
+            fontWeight: "500",
+            zIndex: 9999,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+          }}
+        >
           ✅ Added to cart!
         </div>
       )}
 
-      {/* Sticky Mobile Buy Bar — only on mobile + only on scroll */}
       <style>{`
         .sticky-bar {
           display: none;
         }
+
         @media (max-width: 768px) {
           .sticky-bar {
             display: flex;
@@ -106,10 +214,15 @@ export default function AddToCart({ selectedVariant, cartCount, setCartCount }) 
         <div
           className="sticky-bar"
           style={{
-            position: "fixed", bottom: 0, left: 0, right: 0,
-            background: "white", borderTop: "1px solid #eee",
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            background: "white",
+            borderTop: "1px solid #eee",
             padding: "12px 16px",
-            gap: "12px", zIndex: 999,
+            gap: "12px",
+            zIndex: 999,
             boxShadow: "0 -2px 12px rgba(0,0,0,0.08)",
           }}
         >
@@ -117,23 +230,33 @@ export default function AddToCart({ selectedVariant, cartCount, setCartCount }) 
             onClick={handleAddToCart}
             disabled={!selectedVariant}
             style={{
-              flex: 1, height: "46px",
+              flex: 1,
+              height: "46px",
               background: selectedVariant ? "#111111" : "#555555",
-              color: "white", border: "none",
-              borderRadius: "8px", fontSize: "13px",
-              fontWeight: "600", cursor: selectedVariant ? "pointer" : "not-allowed",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "13px",
+              fontWeight: "600",
+              cursor: selectedVariant ? "pointer" : "not-allowed",
             }}
           >
             Add to Cart
           </button>
+
           <button
+            onClick={handleBuyNow}
             disabled={!selectedVariant}
             style={{
-              flex: 1, height: "46px",
+              flex: 1,
+              height: "46px",
               background: selectedVariant ? "#ff6b00" : "#cc4400",
-              color: "white", border: "none",
-              borderRadius: "8px", fontSize: "13px",
-              fontWeight: "600", cursor: selectedVariant ? "pointer" : "not-allowed",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "13px",
+              fontWeight: "600",
+              cursor: selectedVariant ? "pointer" : "not-allowed",
             }}
           >
             Buy Now

@@ -3,6 +3,8 @@ const { Pool } = require("pg");
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const ordersRoutes = require("./routes/orders.routes");
+const productsRoutes = require("./routes/products.routes");
 
 app.use(cors());
 
@@ -18,6 +20,8 @@ const PORT = process.env.PORT || 4000;
 app.get("/", (req, res) => {
   res.send("God Works Company backend is running!");
 });
+app.use("/api/products", productsRoutes);
+app.use("/api/orders", ordersRoutes);
 
 app.post("/api/products", async (req, res) => {
   const { name, slug, description, image, seller, price, features, variants } = req.body;

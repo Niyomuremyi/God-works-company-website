@@ -109,9 +109,11 @@ export default function Home({ params }) {
       <ImageGallery selectedVariant={selectedVariant} />
       <VariantSelector onChange={setSelectedVariant} />
       <AddToCart
-        selectedVariant={selectedVariant}
-        cartCount={cartCount}
-        setCartCount={setCartCount}
+      productId={product.id}
+      productSlug={product.slug}
+      selectedVariant={selectedVariant}
+      cartCount={cartCount}
+      setCartCount={setCartCount}
       />
       <SellerCard seller={{ name: product.seller, rating: 0, followers: 0 }} />
       <Reviews />
