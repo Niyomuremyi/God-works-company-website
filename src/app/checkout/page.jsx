@@ -1,10 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getProductBySlug, createOrder, ApiError } from "@/lib/api";
 
 export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 40 }}>Loading checkout...</div>}>
+      <CheckoutContent />
+    </Suspense>
+  );
+}
+
+function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -46,28 +54,18 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setSubmitting(true);
     setError(null);
 
     try {
       const order = await createOrder({
         ...form,
-        items: [
-          {
-            productId,
-            variantId,
-            quantity: qty,
-          },
-        ],
+        items: [{ productId, variantId, quantity: qty }],
       });
-
       router.push(`/order-confirmation/${order.id}`);
     } catch (err) {
       setError(
-        err instanceof ApiError
-          ? err.message
-          : "Something went wrong placing your order."
+        err instanceof ApiError ? err.message : "Something went wrong placing your order."
       );
       setSubmitting(false);
     }
@@ -78,30 +76,12 @@ export default function CheckoutPage() {
   }
 
   if (error && !product) {
-    return (
-      <div style={{ padding: 40, color: "red" }}>
-        {error}
-      </div>
-    );
+    return <div style={{ padding: 40, color: "red" }}>{error}</div>;
   }
 
   return (
-    <div
-      style={{
-        maxWidth: 500,
-        margin: "40px auto",
-        padding: 24,
-      }}
-    >
-      <h1
-        style={{
-          fontSize: 22,
-          fontWeight: 700,
-          marginBottom: 20,
-        }}
-      >
-        Checkout
-      </h1>
+    <div style={{ maxWidth: 500, margin: "40px auto", padding: 24 }}>
+      <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 20 }}>Checkout</h1>
 
       {product && (
         <div
@@ -116,134 +96,61 @@ export default function CheckoutPage() {
           <img
             src={product.image}
             alt={product.name}
-            style={{
-              width: 64,
-              height: 64,
-              objectFit: "cover",
-              borderRadius: 6,
-            }}
+            style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 6 }}
           />
-
           <div>
             <p style={{ fontWeight: 600 }}>{product.name}</p>
-
             {variant && (
-              <p
-                style={{
-                  fontSize: 13,
-                  color: "#666",
-                }}
-              >
+              <p style={{ fontSize: 13, color: "#666" }}>
                 {variant.color} · {variant.size}
               </p>
             )}
-
-            <p
-              style={{
-                fontSize: 13,
-                color: "#666",
-              }}
-            >
-              Qty: {qty}
-            </p>
-
-            <p
-              style={{
-                fontWeight: 600,
-                marginTop: 4,
-              }}
-            >
-              ${total.toFixed(2)}
-            </p>
+            <p style={{ fontSize: 13, color: "#666" }}>Qty: {qty}</p>
+            <p style={{ fontWeight: 600, marginTop: 4 }}>${total.toFixed(2)}</p>
           </div>
         </div>
       )}
 
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
-        }}
-      >
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <input
           required
           placeholder="Full name"
           value={form.customerName}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              customerName: e.target.value,
-            })
-          }
+          onChange={(e) => setForm({ ...form, customerName: e.target.value })}
           style={inputStyle}
         />
-
         <input
           required
           type="email"
           placeholder="Email"
           value={form.customerEmail}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              customerEmail: e.target.value,
-            })
-          }
+          onChange={(e) => setForm({ ...form, customerEmail: e.target.value })}
           style={inputStyle}
         />
-
         <input
           placeholder="Phone (optional)"
           value={form.customerPhone}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              customerPhone: e.target.value,
-            })
-          }
+          onChange={(e) => setForm({ ...form, customerPhone: e.target.value })}
           style={inputStyle}
         />
-
         <textarea
           required
           rows={3}
           placeholder="Shipping address"
           value={form.shippingAddress}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              shippingAddress: e.target.value,
-            })
-          }
+          onChange={(e) => setForm({ ...form, shippingAddress: e.target.value })}
           style={inputStyle}
         />
-
         <select
           value={form.paymentMethod}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              paymentMethod: e.target.value,
-            })
-          }
+          onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}
           style={inputStyle}
         >
           <option value="cod">Cash on delivery</option>
           <option value="card">Card</option>
         </select>
 
-        {error && (
-          <p
-            style={{
-              color: "red",
-              fontSize: 13,
-            }}
-          >
-            {error}
-          </p>
-        )}
+        {error && <p style={{ color: "red", fontSize: 13 }}>{error}</p>}
 
         <button
           type="submit"
@@ -259,9 +166,7 @@ export default function CheckoutPage() {
             opacity: submitting ? 0.6 : 1,
           }}
         >
-          {submitting
-            ? "Placing order..."
-            : `Place Order — $${total.toFixed(2)}`}
+          {submitting ? "Placing order..." : `Place Order — $${total.toFixed(2)}`}
         </button>
       </form>
     </div>

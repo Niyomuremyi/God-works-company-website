@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, Suspense } from "react";
 import { X } from "lucide-react";
 import {
   Select,
@@ -124,6 +124,9 @@ export function ProductFilters({ categories }) {
   );
 
   return (
+    <Suspense fallback={<div style={{ padding: 40 }}>
+              Loading checkout...
+            </div>}>
     <div className="space-y-6 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
       {hasActiveFilters && (
         <div className="rounded-lg border-2 border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950">
@@ -309,5 +312,6 @@ export function ProductFilters({ categories }) {
         </Select>
       </div>
     </div>
+    </Suspense>
   );
 }
