@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 exports.register = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, shopName, phone, address, tin } = req.body;
 
   if (!name || !email || !password || !role) {
     return res.status(400).json({ error: "All fields required" });
@@ -11,21 +11,41 @@ exports.register = async (req, res) => {
   if (!["buyer", "seller"].includes(role)) {
     return res.status(400).json({ error: "Invalid role" });
   }
+  if (role === "seller" && (!shopName || !phone || !address || !tin)) {
+    return res.status(400).json({ error: "All seller business fields are required" });
+  }
 
+  const client = await pool.connect();
   try {
+    await client.query("BEGIN");
+
     const password_hash = await bcrypt.hash(password, 10);
-    const result = await pool.query(
+    const userResult = await client.query(
       `INSERT INTO users (name, email, password_hash, role)
        VALUES ($1, $2, $3, $4) RETURNING id, name, email, role`,
       [name, email, password_hash, role]
     );
-    res.status(201).json(result.rows[0]);
+    const user = userResult.rows[0];
+
+    if (role === "seller") {
+      await client.query(
+        `INSERT INTO seller_profiles (user_id, shop_name, phone, address, tin)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [user.id, shopName, phone, address, tin]
+      );
+    }
+
+    await client.query("COMMIT");
+    res.status(201).json(user);
   } catch (err) {
+    await client.query("ROLLBACK");
     if (err.code === "23505") {
       return res.status(409).json({ error: "Email already registered" });
     }
     console.error(err);
     res.status(500).json({ error: "Something went wrong" });
+  } finally {
+    client.release();
   }
 };
 
