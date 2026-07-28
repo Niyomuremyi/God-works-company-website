@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Package, ShoppingBag, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 export function Header() {
   const totalItems = 3; // placeholder for cart items
   const isChatOpen = false; // placeholder for chat
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/80 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/80">
@@ -48,10 +50,35 @@ export function Header() {
           </Button>
 
           {/* User Icon */}
-          <Button variant="ghost" size="icon">
-            <User className="h-5 w-5" />
-            <span className="sr-only">User</span>
-          </Button>
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setUserMenuOpen((prev) => !prev)}
+              >
+                <User className="h-5 w-5" />
+                <span className="sr-only">User</span>
+              </Button>
+
+              {userMenuOpen && (
+                <div className="absolute right-0 top-12 w-40 rounded-md border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
+                  <Link
+                    href="/login"
+                    className="block px-4 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="block px-4 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    Register
+                  </Link>
+                </div>
+              )}
+            </div>
         </div>
       </div>
     </header>
