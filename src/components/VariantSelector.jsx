@@ -1,127 +1,101 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const variants = [
-  {
-    color: "white",
-    label: "White",
-    image: "/product-images/shoe1.jpg",
-    price: 120,
-    sizes: [
-      { size: "39", inStock: true },
-      { size: "40", inStock: true },
-      { size: "41", inStock: false },
-      { size: "42", inStock: true },
-    ],
-    inStock: true,
-  },
-  {
-    color: "dimgray",
-    label: "Gray",
-    image: "/product-images/shoe2.jpg",
-    price: 110,
-    sizes: [
-      { size: "39", inStock: false },
-      { size: "40", inStock: false },
-      { size: "41", inStock: false },
-      { size: "42", inStock: false },
-    ],
-    inStock: false,
-  },
-  {
-    color: "black",
-    label: "Black",
-    image: "/product-images/shoe3.jpg",
-    price: 130,
-    sizes: [
-      { size: "39", inStock: true },
-      { size: "40", inStock: true },
-      { size: "41", inStock: true },
-      { size: "42", inStock: false },
-    ],
-    inStock: true,
-  },
-];
+export default function VariantSelector({ variants = [], price, onChange }) {
+  const uniqueColors = [...new Set(variants.map((v) => v.color))];
 
-export default function VariantSelector({ onChange }) {
-  const [selectedColor, setSelectedColor] = useState(variants[0]);
+  const [selectedColor, setSelectedColor] = useState(uniqueColors[0] || null);
   const [selectedSize, setSelectedSize] = useState(null);
 
-  const handleColorSelect = (variant) => {
-    setSelectedColor(variant);
-    setSelectedSize(null); // reset size when color changes
-    onChange({ ...variant, selectedSize: null });
+  const sizesForColor = variants.filter((v) => v.color === selectedColor);
+  const selectedVariant = sizesForColor.find((v) => v.size === selectedSize) || null;
+  const colorInStock = sizesForColor.some((v) => v.stock > 0);
+
+  useEffect(() => {
+    setSelectedSize(null);
+    onChange(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedColor]);
+
+  const handleColorSelect = (color) => {
+    setSelectedColor(color);
   };
 
-  const handleSizeSelect = (sizeObj) => {
-    if (!sizeObj.inStock) return;
-    setSelectedSize(sizeObj.size);
-    onChange({ ...selectedColor, selectedSize: sizeObj.size });
+  const handleSizeSelect = (variant) => {
+    if (variant.stock <= 0) return;
+    setSelectedSize(variant.size);
+    onChange(variant);
   };
+
+  if (variants.length === 0) {
+    return <p style={{ color: "#666" }}>No variants available for this product.</p>;
+  }
 
   return (
     <div style={{ marginTop: "20px" }}>
-
       {/* Price */}
-      <h2 style={{ marginBottom: "12px", color:"#111111" }}>${selectedColor.price}</h2>
+      <h2 style={{ marginBottom: "12px", color: "#111111" }}>${price}</h2>
 
       {/* Color Swatches */}
-      <h3 style={{ marginBottom: "8px", color:"#111111" }}>
-        Color: <span style={{ fontWeight: "normal", color:"#444444"}}>{selectedColor.label}</span>
+      <h3 style={{ marginBottom: "8px", color: "#111111" }}>
+        Color: <span style={{ fontWeight: "normal", color: "#444444" }}>{selectedColor}</span>
       </h3>
-      <div style={{ display: "flex", gap: "10px", marginBottom: "16px" }}>
-        {variants.map((v, index) => (
+      <div style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
+        {uniqueColors.map((color, index) => (
           <button
             key={index}
-            onClick={() => handleColorSelect(v)}
-            disabled={!v.inStock}
-            title={v.label}
+            onClick={() => handleColorSelect(color)}
+            title={color}
             style={{
-              width: "40px",
-              height: "40px",
-              background: v.color,
-              border:
-                selectedColor.color === v.color
-                  ? "3px solid black"
-                  : "1px solid gray",
-              borderRadius: "50%",
-              opacity: v.inStock ? 1 : 0.3,
-              cursor: v.inStock ? "pointer" : "not-allowed",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "6px 12px",
+              border: selectedColor === color ? "2px solid black" : "1px solid gray",
+              borderRadius: "20px",
+              background: "white",
+              cursor: "pointer",
             }}
-          />
+          >
+            <span
+              style={{
+                width: "16px",
+                height: "16px",
+                borderRadius: "50%",
+                background: color,
+                border: "1px solid #ccc",
+                display: "inline-block",
+              }}
+            />
+            <span style={{ fontSize: "12px", color: "#111111" }}>{color}</span>
+          </button>
         ))}
       </div>
 
       {/* Size Grid */}
-      <h3 style={{ marginBottom: "8px", color:"#111111" }}>
-        Size:{" "}
-        <span style={{ fontWeight: "normal" }}>
-          {selectedSize ? selectedSize : "—"}
-        </span>
+      <h3 style={{ marginBottom: "8px", color: "#111111" }}>
+        Size: <span style={{ fontWeight: "normal" }}>{selectedSize || "—"}</span>
       </h3>
       <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "16px" }}>
-        {selectedColor.sizes.map((sizeObj, index) => (
+        {sizesForColor.map((variant, index) => (
           <button
             key={index}
-            onClick={() => handleSizeSelect(sizeObj)}
-            disabled={!sizeObj.inStock}
+            onClick={() => handleSizeSelect(variant)}
+            disabled={variant.stock <= 0}
             style={{
               width: "52px",
               height: "44px",
-              border:
-                selectedSize === sizeObj.size
-                  ? "2px solid black"
-                  : "1px solid gray",
+              border: selectedSize === variant.size ? "2px solid black" : "1px solid gray",
               borderRadius: "6px",
-              background: selectedSize === sizeObj.size ? "black" : "white",
-              color: selectedSize === sizeObj.size ? "white" : "black",
-              opacity: sizeObj.inStock ? 1 : 0.3,
-              cursor: sizeObj.inStock ? "pointer" : "not-allowed",
-              textDecoration: sizeObj.inStock ? "none" : "line-through",
+              background: selectedSize === variant.size ? "black" : "white",
+              color: selectedSize === variant.size ? "white" : "black",
+              opacity: variant.stock > 0 ? 1 : 0.3,
+              cursor: variant.stock > 0 ? "pointer" : "not-allowed",
+              textDecoration: variant.stock > 0 ? "none" : "line-through",
               fontWeight: "500",
             }}
           >
-            {sizeObj.size}
+            {variant.size}
           </button>
         ))}
       </div>
@@ -132,13 +106,13 @@ export default function VariantSelector({ onChange }) {
           display: "inline-block",
           padding: "5px 12px",
           borderRadius: "20px",
-          background: selectedColor.inStock ? "#e6f4ec" : "#fde8e0",
-          color: selectedColor.inStock ? "green" : "red",
+          background: colorInStock ? "#e6f4ec" : "#fde8e0",
+          color: colorInStock ? "green" : "red",
           fontSize: "13px",
           fontWeight: "500",
         }}
       >
-        {selectedColor.inStock ? "In Stock" : "Out of Stock"}
+        {colorInStock ? "In Stock" : "Out of Stock"}
       </div>
     </div>
   );

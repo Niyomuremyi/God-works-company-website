@@ -17,14 +17,33 @@ function ProductCard({ product }) {
       onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-4px)"}
       onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
     >
-      {/* Image */}
+   
+    {/* Image */}
       <div style={{ width: "100%", height: "180px", overflow: "hidden" }}>
-        <img
-          src={product.image}
-          alt={product.name}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
+        {product.image ? (
+          <img
+            src={product.image}
+            alt={product.name}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : (
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              background: "#e5e5e5",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#999",
+              fontSize: "12px",
+            }}
+          >
+            No image
+          </div>
+        )}
       </div>
+     
 
       {/* Info */}
       <div style={{ padding: "12px" }}>
