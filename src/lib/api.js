@@ -11,6 +11,7 @@ export class ApiError extends Error {
 
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: "include", // Send cookies/JWT if using authentication
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -23,7 +24,7 @@ async function request(path, options = {}) {
   try {
     data = await res.json();
   } catch {
-    // No response body
+    // Ignore empty response body
   }
 
   if (!res.ok) {
@@ -56,6 +57,12 @@ export const createOrder = (input) =>
 export const getOrderById = (id) =>
   request(`/api/orders/${id}`);
 
+export const getCustomerOrders = (email) =>
+  request(`/api/orders/customer/${email}`);
+
+export const getCustomerOrderById = (email, id) =>
+  request(`/api/orders/customer/${email}/${id}`);
+
 // =======================
 // Orders (Admin)
 // =======================
@@ -84,3 +91,54 @@ export const updateOrderItemStatus = (itemId, status, seller) =>
       seller,
     }),
   });
+
+// =======================
+// Customer Dashboard
+// =======================
+
+export const getCustomerDashboard = (email) =>{
+  return request(`/api/orders/customer/dashboard/${email}`);
+}
+
+// =======================
+// Customer Profile
+// =======================
+
+export async function getCustomerProfile() {
+  return request("/api/customer/profile");
+}
+
+export async function updateCustomerProfile(data) {
+  return request("/api/customer/profile", {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+// =======================
+// Customer Addresses
+// =======================
+
+export async function getCustomerAddresses() {
+  return request("/api/customer/addresses");
+}
+
+export async function createAddress(data) {
+  return request("/api/customer/addresses", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateAddress(id, data) {
+  return request(`/api/customer/addresses/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteAddress(id) {
+  return request(`/api/customer/addresses/${id}`, {
+    method: "DELETE",
+  });
+}

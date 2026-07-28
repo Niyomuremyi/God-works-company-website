@@ -14,15 +14,9 @@ export function StatCard({ title, icon: Icon, value, href }) {
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-            {title}
-          </p>
-
-          <p className="mt-2 text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-            {value}
-          </p>
+          <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{title}</p>
+          <p className="mt-2 text-3xl font-bold text-zinc-900 dark:text-zinc-100">{value}</p>
         </div>
-
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
           <Icon className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
         </div>
@@ -30,9 +24,5 @@ export function StatCard({ title, icon: Icon, value, href }) {
     </div>
   );
 
-  if (href) {
-    return <Link href={href}>{content}</Link>;
-  }
-
-  return content;
+  return href ? <Link href={href}>{content}</Link> : content;
 }

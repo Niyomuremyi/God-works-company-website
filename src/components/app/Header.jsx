@@ -22,7 +22,7 @@ export function Header() {
         <div className="flex items-center gap-2">
           {/* My Orders */}
           <Button asChild>
-            <Link href="/orders" className="flex items-center gap-2">
+            <Link href="/customer" className="flex items-center gap-2">
               <Package className="h-5 w-5" />
               <span className="text-sm font-medium">My Orders</span>
             </Link>
