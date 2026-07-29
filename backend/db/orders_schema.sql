@@ -28,3 +28,18 @@ CREATE TABLE IF NOT EXISTS order_items (
 
 CREATE INDEX IF NOT EXISTS idx_order_items_seller ON order_items(seller);
 CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
+ALTER TABLE products ADD COLUMN seller_id INTEGER REFERENCES users(id);
+ALTER TABLE order_items ADD COLUMN seller_id INTEGER REFERENCES users(id);
+ALTER TABLE orders ADD COLUMN customer_id INTEGER REFERENCES users(id);
+
+-- Backfill: match existing free-text seller names to seller_profiles.shop_name
+UPDATE products p SET seller_id = sp.user_id
+FROM seller_profiles sp
+WHERE LOWER(TRIM(p.seller)) = LOWER(TRIM(sp.shop_name)) AND p.seller_id IS NULL;
+
+UPDATE order_items oi SET seller_id = sp.user_id
+FROM seller_profiles sp
+WHERE LOWER(TRIM(oi.seller)) = LOWER(TRIM(sp.shop_name)) AND oi.seller_id IS NULL;
+
+-- Run this after migrating — anything returned here didn't match and needs a manual fix
+-- SELECT id, name, seller FROM products WHERE seller_id IS NULL;

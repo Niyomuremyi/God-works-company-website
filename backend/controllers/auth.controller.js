@@ -50,23 +50,35 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
+  console.log("Login endpoint hit");
 
-  if (!email || !password) {
-    return res.status(400).json({ error: "Email and password required" });
-  }
+  const { email, password } = req.body;
+  console.log("Email:", email);
 
   try {
-    const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+    const result = await pool.query(
+      "SELECT * FROM users WHERE email = $1",
+      [email]
+    );
+
+    console.log("Users found:", result.rows.length);
+
     if (result.rows.length === 0) {
+      console.log("User not found");
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
     const user = result.rows[0];
+    console.log("User:", user.email);
+
     const match = await bcrypt.compare(password, user.password_hash);
+    console.log("Password match:", match);
+
     if (!match) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
+
+    console.log("JWT_SECRET:", process.env.JWT_SECRET);
 
     const token = jwt.sign(
       { id: user.id, role: user.role },
@@ -74,9 +86,16 @@ exports.login = async (req, res) => {
       { expiresIn: "7d" }
     );
 
+    console.log("Token created");
+
     res.json({
       token,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (err) {
     console.error(err);

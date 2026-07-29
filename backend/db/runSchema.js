@@ -8,7 +8,7 @@ async function runSchema() {
       path.join(__dirname, "orders_schema.sql"),
       "utf8"
     );
-
+    
     await pool.query(schema);
 
     console.log("Database schema created successfully");
