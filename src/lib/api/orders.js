@@ -8,35 +8,48 @@ export class ApiError extends Error {
     this.status = status;
   }
 }
+import { getToken, clearSession } from "../auth";
 
 async function request(path, options = {}) {
+  const token = getToken();
+
   const res = await fetch(`${API_BASE_URL}${path}`, {
-    credentials: "include", // Send cookies/JWT if using authentication
+    credentials: "include",
     ...options,
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
   });
 
-  let data = null;
+  if (res.status === 401) {
+    clearSession(); // token expired/invalid — drop the stale session
+  }
 
+  let data = null;
   try {
     data = await res.json();
-  } catch {
-    // Ignore empty response body
-  }
+  } catch {}
 
   if (!res.ok) {
     throw new ApiError(data?.error || "Request failed", res.status);
   }
-
   return data;
 }
 
-// =======================
-// Products
-// =======================
+// Orders (Buyer) — identity comes from the token now, no email in the URL
+export const getMyOrders = () => request(`/api/orders/me`);
+export const getMyOrderById = (id) => request(`/api/orders/me/${id}`);
+export const getMyDashboard = () => request(`/api/orders/me/dashboard`);
+
+// Orders (Seller) — identity comes from the token now
+export const getSellerOrders = () => request(`/api/orders/seller/me`);
+export const updateOrderItemStatus = (itemId, status) =>
+  request(`/api/orders/items/${itemId}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
 
 export const getProducts = () =>
   request("/api/products");
@@ -80,17 +93,6 @@ export const updateOrderStatus = (id, status) =>
 // Orders (Seller)
 // =======================
 
-export const getSellerOrders = (sellerName) =>
-  request(`/api/orders/seller/${encodeURIComponent(sellerName)}`);
-
-export const updateOrderItemStatus = (itemId, status, seller) =>
-  request(`/api/orders/items/${itemId}/status`, {
-    method: "PATCH",
-    body: JSON.stringify({
-      status,
-      seller,
-    }),
-  });
 
 // =======================
 // Customer Dashboard
@@ -142,3 +144,5 @@ export async function deleteAddress(id) {
     method: "DELETE",
   });
 }
+export const getSellerDashboard = () => request(`/api/orders/seller/me/dashboard`);
+export const getMyProducts = () => request(`/api/products/mine`);

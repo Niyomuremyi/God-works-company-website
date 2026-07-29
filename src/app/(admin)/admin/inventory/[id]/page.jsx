@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 
@@ -8,9 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { createProduct } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 
 export default function ProductDetailPage({ params }) {
   const { id } = use(params);
+    const router = useRouter();
 
   const [product, setProduct] = useState({
     id,
@@ -27,25 +31,21 @@ export default function ProductDetailPage({ params }) {
   });
 
   const [isSaving, setIsSaving] = useState(false);
+  
+    const { user, ready, isLoggedIn } = useAuth();
 
     const handleSave = async () => {
-      setIsSaving(true);
-      try {
-        const res = await fetch("https://god-works-company-website-production.up.railway.app/api/products", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(product),
-        });
+     setIsSaving(true);
 
-        if (!res.ok) throw new Error("Failed to save product");
-
-        alert("Product saved successfully!");
-      } catch (err) {
-        console.error(err);
-        alert("Error saving product");
-      } finally {
-        setIsSaving(false);
-      }
+     try {
+       await createProduct(product);
+       alert("Product saved successfully!");
+     } catch (err) {
+       console.error(err);
+       alert(err.message);
+     } finally {
+       setIsSaving(false);
+     }
     };
 
   const updateField = (field, value) => {
@@ -98,6 +98,14 @@ export default function ProductDetailPage({ params }) {
           variants: prev.variants.filter((_, i) => i !== index),
         }));
       };
+
+ useEffect(() => {
+    if (!ready) return;
+    if (!isLoggedIn ) {
+      router.push("/login?redirect=/admin/products");
+      return;
+    }
+  }, [ready, isLoggedIn]);
 
   return (
     <div className="space-y-4 sm:space-y-6">
