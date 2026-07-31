@@ -76,15 +76,15 @@ export default function SellerOrdersPage() {
   }, [ready, isLoggedIn, loadOrders]);
 
   const handleStatusChange = async (itemId, status) => {
-    const previous = items;
-    setItems((current) => current.map((i) => (i.id === itemId ? { ...i, item_status: status } : i)));
-    try {
-      await updateOrderItemStatus(itemId, status);
-    } catch (err) {
-      setItems(previous);
-      alert(err instanceof ApiError ? err.message : "Failed to update item status");
-    }
-  };
+  const previous = items;
+  setItems((current) => current.map((i) => (i.id === itemId ? { ...i, item_status: status } : i)));
+  try {
+    await updateOrderItemStatus(itemId, status);
+  } catch (err) {
+    setItems(previous);
+    alert(err instanceof ApiError ? err.message : "Failed to update item status");
+  }
+};
 
   const filteredItems = items
     .map(mapItemForTable)

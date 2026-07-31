@@ -6,6 +6,7 @@ const app = express();
 const ordersRoutes = require("./routes/orders.routes");
 const productsRoutes = require("./routes/products.routes");
 const authRoutes = require("./routes/auth.routes");
+const customerRoutes = require("./routes/customer.routes");
 
 app.use(
   cors({
@@ -25,6 +26,7 @@ app.get("/", (req, res) => {
 app.use("/api/products", productsRoutes);
 app.use("/api/orders", ordersRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/customer", customerRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

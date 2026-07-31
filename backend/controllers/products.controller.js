@@ -58,9 +58,6 @@ exports.getProductBySlug = async (req, res) => {
 exports.createProduct = async (req, res) => {
   const sellerId = req?.user?.id; // set by authenticate + requireRole("seller") in the route
   const { name, slug, description, image, price, features, variants } = req.body;
-  // console.log(req.user,req.body)
-  // res.status(200).json({ error: "Something went wrong" });
-  // return;
   try {
     const profileResult = await pool.query(
       "SELECT shop_name FROM seller_profiles WHERE user_id = $1",

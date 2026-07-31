@@ -146,3 +146,6 @@ export async function deleteAddress(id) {
 }
 export const getSellerDashboard = () => request(`/api/orders/seller/me/dashboard`);
 export const getMyProducts = () => request(`/api/products/mine`);
+export const cancelOrder = (id) =>
+  request(`/api/orders/${id}/cancel`, { method: "PATCH" });
+export const getSellerOrderById = (id) => request(`/api/orders/seller/me/${id}`);

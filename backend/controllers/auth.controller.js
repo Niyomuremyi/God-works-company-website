@@ -42,7 +42,6 @@ exports.register = async (req, res) => {
     if (err.code === "23505") {
       return res.status(409).json({ error: "Email already registered" });
     }
-    console.error(err);
     res.status(500).json({ error: "Something went wrong" });
   } finally {
     client.release();
@@ -78,7 +77,7 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    console.log("JWT_SECRET:", process.env.JWT_SECRET);
+    
 
     const token = jwt.sign(
       { id: user.id, role: user.role },
