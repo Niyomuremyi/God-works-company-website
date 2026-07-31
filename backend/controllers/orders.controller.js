@@ -358,6 +358,9 @@ exports.getSellerOrders = async (req, res) => {
 };
 
 // Seller marks one of their line items (e.g. shipped) — seller comes from the JWT now
+// Seller marks one of their line items (e.g. shipped) — seller comes from the JWT now.
+// Also recomputes the parent order's overall status from all its items, so the
+// customer-facing order status stays in sync with per-seller item updates.
 exports.updateOrderItemStatus = async (req, res) => {
   const { itemId } = req.params;
   const { status } = req.body;
@@ -367,25 +370,58 @@ exports.updateOrderItemStatus = async (req, res) => {
     return res.status(400).json({ error: `status must be one of: ${ITEM_STATUSES.join(", ")}` });
   }
 
+  const client = await pool.connect();
   try {
-    const result = await pool.query(
+    await client.query("BEGIN");
+
+    const itemResult = await client.query(
       `UPDATE order_items SET item_status = $1, updated_at = NOW()
        WHERE id = $2 AND seller_id = $3
        RETURNING *`,
       [status, itemId, sellerId]
     );
-    if (result.rows.length === 0) {
+    if (itemResult.rows.length === 0) {
+      await client.query("ROLLBACK");
       return res.status(404).json({ error: "Item not found for this seller" });
     }
-    res.json(result.rows[0]);
+    const updatedItem = itemResult.rows[0];
+
+    const allItemsResult = await client.query(
+      "SELECT item_status FROM order_items WHERE order_id = $1",
+      [updatedItem.order_id]
+    );
+    const statuses = allItemsResult.rows.map((r) => r.item_status);
+
+    let newOrderStatus;
+    if (statuses.every((s) => s === "cancelled")) {
+      newOrderStatus = "cancelled";
+    } else if (statuses.every((s) => s === "delivered")) {
+      newOrderStatus = "completed";
+    } else if (statuses.some((s) => s !== "pending")) {
+      newOrderStatus = "processing";
+    } else {
+      newOrderStatus = "pending";
+    }
+
+    await client.query(
+      "UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2",
+      [newOrderStatus, updatedItem.order_id]
+    );
+
+    await client.query("COMMIT");
+    res.json({ ...updatedItem, order_status: newOrderStatus });
   } catch (err) {
+    await client.query("ROLLBACK");
     console.error(err);
     res.status(500).json({ error: "Something went wrong" });
+  } finally {
+    client.release();
   }
 };
 
 exports.cancelOrder = async (req, res) => {
   const { id } = req.params;
+  const customerId = req.user.id;
   const client = await pool.connect();
 
   try {
@@ -397,6 +433,9 @@ exports.cancelOrder = async (req, res) => {
     }
     const order = orderResult.rows[0];
 
+    if (order.customer_id !== customerId) {
+      throw { status: 403, message: "You can't cancel someone else's order" };
+    }
     if (order.status === "cancelled") {
       throw { status: 409, message: "Order is already cancelled" };
     }
@@ -405,7 +444,6 @@ exports.cancelOrder = async (req, res) => {
     }
 
     const itemsResult = await client.query("SELECT * FROM order_items WHERE order_id = $1", [id]);
-
     for (const item of itemsResult.rows) {
       await client.query("UPDATE products SET stock = stock + $1 WHERE id = $2", [item.quantity, item.product_id]);
       if (item.variant_id) {
@@ -463,7 +501,7 @@ exports.getSellerDashboard = async (req, res) => {
     const { total_orders } = orderStats.rows[0];
 
     const lowStockItems = await pool.query(
-      `SELECT id, name, stock FROM products WHERE seller_id = $1 AND stock <= 10 ORDER BY stock ASC LIMIT 5`,
+      `SELECT id, name, image, stock FROM products WHERE seller_id = $1 AND stock <= 10 ORDER BY stock ASC LIMIT 5`,
       [sellerId]
     );
 
@@ -483,6 +521,48 @@ exports.getSellerDashboard = async (req, res) => {
       lowStockCount: low_stock_count,
       lowStockItems: lowStockItems.rows,
       recentOrders: recentOrders.rows,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+// Seller: view a single order, scoped to only their own line items within it.
+// If the seller has no items in this order, treat it as not found — don't leak
+// that the order exists or expose other sellers' items/revenue.
+exports.getSellerOrderById = async (req, res) => {
+  const sellerId = req.user.id;
+  const { id } = req.params;
+  try {
+    const itemsResult = await pool.query(
+      "SELECT * FROM order_items WHERE order_id = $1 AND seller_id = $2 ORDER BY id",
+      [id, sellerId]
+    );
+    if (itemsResult.rows.length === 0) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const orderResult = await pool.query("SELECT * FROM orders WHERE id = $1", [id]);
+    if (orderResult.rows.length === 0) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+    const order = orderResult.rows[0];
+    const items = itemsResult.rows;
+    const sellerSubtotal = items.reduce((sum, item) => sum + Number(item.subtotal), 0);
+
+    res.json({
+      id: order.id,
+      orderNumber: order.id,
+      customerName: order.customer_name,
+      email: order.customer_email,
+      phone: order.customer_phone,
+      address: order.shipping_address,
+      paymentMethod: order.payment_method,
+      status: order.status,
+      createdAt: order.created_at,
+      sellerSubtotal,
+      items,
     });
   } catch (err) {
     console.error(err);
