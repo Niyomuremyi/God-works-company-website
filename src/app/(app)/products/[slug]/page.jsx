@@ -65,7 +65,7 @@ export default function Home({ params }) {
       <div className="text-xs text-neutral-500 mb-4">
         <a href="/" className="text-neutral-500 no-underline">Home</a>
         <span className="mx-1.5">›</span>
-        <a href="/shoes" className="text-neutral-500 no-underline">Shoes</a>
+        <a href="/" className="text-neutral-500 no-underline">Products</a>
         <span className="mx-1.5">›</span>
         <span className="text-neutral-900">{product.name}</span>
       </div>
