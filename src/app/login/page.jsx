@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { login } from "@/lib/api";
+import { setSession } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,40 +19,28 @@ export default function LoginPage() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  e.preventDefault();
 
-    try {
-      const res = await fetch(
-        "https://god-works-company-website-production.up.railway.app/api/auth/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
-        }
-      );
-      const data = await res.json();
+  setError("");
+  setLoading(true);
 
-      if (!res.ok) {
-        setError(data.error || "Login failed");
-        setLoading(false);
-        return;
-      }
+  try {
+    const data = await login(form);
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+    setSession(data.token, data.user);
 
-      if (data.user.role === "seller") {
-        router.push("/admin");
-      } else {
-        router.push("/");
-      }
-    } catch (err) {
-      setError("Something went wrong");
-      setLoading(false);
+    if (data.user.role === "seller") {
+      router.push("/admin");
+    } else {
+      router.push("/");
     }
-  };
+
+  } catch (err) {
+    setError(err.message || "Login failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="mx-auto flex max-w-md flex-col gap-6 px-4 py-16">

@@ -3,12 +3,10 @@ const pool = require("../config/db");
 const ORDER_STATUSES = ["pending", "processing", "completed", "cancelled"];
 const ITEM_STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
 
-// Customer checkout
-// Normalizes a DB row (+ optional attached items) into the shape the frontend expects everywhere
 function mapOrder(order) {
   return {
     id: order.id,
-    orderNumber: order.id, // no dedicated order-number column yet — id doubles as the public reference
+    orderNumber: order.id,
     customerName: order.customer_name,
     email: order.customer_email,
     phone: order.customer_phone,
@@ -22,8 +20,11 @@ function mapOrder(order) {
     items: order.items,
   };
 }
+
+// Guest-friendly: req.user is only populated if a valid token was sent (optionalAuthenticate)
 exports.createOrder = async (req, res) => {
   const { customerName, customerEmail, customerPhone, shippingAddress, paymentMethod, items } = req.body;
+  const customerId = req.user?.id || null;
 
   if (!customerName || !customerEmail || !shippingAddress) {
     return res.status(400).json({ error: "customerName, customerEmail and shippingAddress are required" });
@@ -47,7 +48,7 @@ exports.createOrder = async (req, res) => {
       }
 
       const productResult = await client.query(
-        "SELECT id, name, price, seller, stock FROM products WHERE id = $1 FOR UPDATE",
+        "SELECT id, name, price, seller, seller_id, stock FROM products WHERE id = $1 FOR UPDATE",
         [productId]
       );
       if (productResult.rows.length === 0) {
@@ -79,6 +80,7 @@ exports.createOrder = async (req, res) => {
         variantId: variantId || null,
         productName: product.name,
         seller: product.seller,
+        sellerId: product.seller_id,
         price: product.price,
         quantity,
         subtotal,
@@ -86,18 +88,18 @@ exports.createOrder = async (req, res) => {
     }
 
     const orderResult = await client.query(
-      `INSERT INTO orders (customer_name, customer_email, customer_phone, shipping_address, payment_method, total_amount, status)
-       VALUES ($1,$2,$3,$4,$5,$6,'pending')
+      `INSERT INTO orders (customer_id, customer_name, customer_email, customer_phone, shipping_address, payment_method, total_amount, status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,'pending')
        RETURNING *`,
-      [customerName, customerEmail, customerPhone || null, shippingAddress, paymentMethod || "cod", total]
+      [customerId, customerName, customerEmail, customerPhone || null, shippingAddress, paymentMethod || "cod", total]
     );
     const order = orderResult.rows[0];
 
     for (const item of resolvedItems) {
       await client.query(
-        `INSERT INTO order_items (order_id, product_id, variant_id, product_name, seller, price, quantity, subtotal, item_status)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'pending')`,
-        [order.id, item.productId, item.variantId, item.productName, item.seller, item.price, item.quantity, item.subtotal]
+        `INSERT INTO order_items (order_id, product_id, variant_id, product_name, seller, seller_id, price, quantity, subtotal, item_status)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'pending')`,
+        [order.id, item.productId, item.variantId, item.productName, item.seller, item.sellerId, item.price, item.quantity, item.subtotal]
       );
 
       if (item.variantId) {
@@ -109,8 +111,7 @@ exports.createOrder = async (req, res) => {
     await client.query("COMMIT");
 
     const itemsResult = await pool.query("SELECT * FROM order_items WHERE order_id = $1", [order.id]);
-    // in createOrder, replace the final res.status(201).json(...) with:
-res.status(201).json(mapOrder({ ...order, items: itemsResult.rows }));  
+    res.status(201).json(mapOrder({ ...order, items: itemsResult.rows }));
   } catch (err) {
     await client.query("ROLLBACK");
     console.error(err);
@@ -139,7 +140,7 @@ exports.getAllOrders = async (req, res) => {
       const itemsResult = await pool.query("SELECT * FROM order_items WHERE order_id = $1", [order.id]);
       order.items = itemsResult.rows;
     }
-res.json(orders.map(mapOrder));
+    res.json(orders.map(mapOrder));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Something went wrong" });
@@ -162,22 +163,21 @@ exports.getOrderById = async (req, res) => {
     res.status(500).json({ error: "Something went wrong" });
   }
 };
-// Customer: all orders placed under this email (case-insensitive)
-exports.getCustomerOrdersByEmail = async (req, res) => {
-  const email = req.params?.email ?? "email@gmail.com";
-  console.log(email)
+
+// Buyer: identity comes from the JWT, never a URL param — old email-based
+// routes let anyone view anyone's orders just by guessing their email.
+exports.getMyOrders = async (req, res) => {
+  const customerId = req.user.id;
   try {
     const ordersResult = await pool.query(
-      "SELECT * FROM orders WHERE LOWER(customer_email) = LOWER($1) ORDER BY created_at DESC",
-      [email]
+      "SELECT * FROM orders WHERE customer_id = $1 ORDER BY created_at DESC",
+      [customerId]
     );
     const orders = ordersResult.rows;
-
     for (const order of orders) {
       const itemsResult = await pool.query("SELECT * FROM order_items WHERE order_id = $1", [order.id]);
       order.items = itemsResult.rows;
     }
-
     res.json(orders.map(mapOrder));
   } catch (err) {
     console.error(err);
@@ -185,7 +185,80 @@ exports.getCustomerOrdersByEmail = async (req, res) => {
   }
 };
 
-// Customer: single order, but only if it belongs to that email — prevents id-guessing
+exports.getMyOrderById = async (req, res) => {
+  const { id } = req.params;
+  const customerId = req.user.id;
+  try {
+    const orderResult = await pool.query(
+      "SELECT * FROM orders WHERE id = $1 AND customer_id = $2",
+      [id, customerId]
+    );
+    if (orderResult.rows.length === 0) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+    const order = orderResult.rows[0];
+    const itemsResult = await pool.query("SELECT * FROM order_items WHERE order_id = $1", [id]);
+    order.items = itemsResult.rows;
+    res.json(mapOrder(order));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+exports.getMyDashboard = async (req, res) => {
+  const customerId = req.user.id;
+  try {
+    const statsResult = await pool.query(
+      `SELECT COUNT(*)::int AS total_orders, COALESCE(SUM(total_amount), 0) AS total_spent
+       FROM orders WHERE customer_id = $1`,
+      [customerId]
+    );
+    const { total_orders, total_spent } = statsResult.rows[0];
+
+    const recentResult = await pool.query(
+      `SELECT * FROM orders WHERE customer_id = $1 ORDER BY created_at DESC LIMIT 5`,
+      [customerId]
+    );
+    const recentOrders = recentResult.rows;
+    for (const order of recentOrders) {
+      const itemsResult = await pool.query("SELECT * FROM order_items WHERE order_id = $1", [order.id]);
+      order.items = itemsResult.rows;
+    }
+
+    res.json({
+      totalOrders: total_orders,
+      totalSpent: Number(total_spent),
+      recentOrders: recentOrders.map(mapOrder),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+// Deprecated — kept only so nothing breaks mid-migration. Anyone can view any
+// customer's orders by guessing their email; remove once the frontend fully
+// moves to /me routes above.
+exports.getCustomerOrdersByEmail = async (req, res) => {
+  const email = req.params?.email ?? "";
+  try {
+    const ordersResult = await pool.query(
+      "SELECT * FROM orders WHERE LOWER(customer_email) = LOWER($1) ORDER BY created_at DESC",
+      [email]
+    );
+    const orders = ordersResult.rows;
+    for (const order of orders) {
+      const itemsResult = await pool.query("SELECT * FROM order_items WHERE order_id = $1", [order.id]);
+      order.items = itemsResult.rows;
+    }
+    res.json(orders.map(mapOrder));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
 exports.getCustomerOrderById = async (req, res) => {
   const { email, id } = req.params;
   try {
@@ -199,8 +272,41 @@ exports.getCustomerOrderById = async (req, res) => {
     const order = orderResult.rows[0];
     const itemsResult = await pool.query("SELECT * FROM order_items WHERE order_id = $1", [id]);
     order.items = itemsResult.rows;
-
     res.json(mapOrder(order));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+exports.getCustomerDashboard = async (req, res) => {
+  const { email } = req.params;
+  if (!email) {
+    return res.status(400).json({ error: "email is required" });
+  }
+  try {
+    const statsResult = await pool.query(
+      `SELECT COUNT(*)::int AS total_orders, COALESCE(SUM(total_amount), 0) AS total_spent
+       FROM orders WHERE LOWER(customer_email) = LOWER($1)`,
+      [email]
+    );
+    const { total_orders, total_spent } = statsResult.rows[0];
+
+    const recentResult = await pool.query(
+      `SELECT * FROM orders WHERE LOWER(customer_email) = LOWER($1) ORDER BY created_at DESC LIMIT 5`,
+      [email]
+    );
+    const recentOrders = recentResult.rows;
+    for (const order of recentOrders) {
+      const itemsResult = await pool.query("SELECT * FROM order_items WHERE order_id = $1", [order.id]);
+      order.items = itemsResult.rows;
+    }
+
+    res.json({
+      totalOrders: total_orders,
+      totalSpent: Number(total_spent),
+      recentOrders: recentOrders.map(mapOrder),
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Something went wrong" });
@@ -231,18 +337,18 @@ exports.updateOrderStatus = async (req, res) => {
   }
 };
 
-// Seller "command center": every line item that belongs to them, across all orders
+// Seller: every line item that belongs to them, identity from the JWT
 exports.getSellerOrders = async (req, res) => {
-  const { sellerName } = req.params;
+  const sellerId = req.user.id;
   try {
     const result = await pool.query(
       `SELECT oi.*, o.customer_name, o.customer_email, o.customer_phone, o.shipping_address,
               o.status AS order_status, o.created_at AS order_created_at
        FROM order_items oi
        JOIN orders o ON o.id = oi.order_id
-       WHERE oi.seller = $1
+       WHERE oi.seller_id = $1
        ORDER BY oi.created_at DESC`,
-      [sellerName]
+      [sellerId]
     );
     res.json(result.rows);
   } catch (err) {
@@ -251,39 +357,71 @@ exports.getSellerOrders = async (req, res) => {
   }
 };
 
-// Seller "commands" one of their line items (e.g. mark shipped)
-// TODO: once login exists, get `seller` from req.user instead of the request body
+// Seller marks one of their line items (e.g. shipped) — seller comes from the JWT now
+// Seller marks one of their line items (e.g. shipped) — seller comes from the JWT now.
+// Also recomputes the parent order's overall status from all its items, so the
+// customer-facing order status stays in sync with per-seller item updates.
 exports.updateOrderItemStatus = async (req, res) => {
   const { itemId } = req.params;
-  const { status, seller } = req.body;
+  const { status } = req.body;
+  const sellerId = req.user.id;
 
   if (!ITEM_STATUSES.includes(status)) {
     return res.status(400).json({ error: `status must be one of: ${ITEM_STATUSES.join(", ")}` });
   }
-  if (!seller) {
-    return res.status(400).json({ error: "seller is required" });
-  }
 
+  const client = await pool.connect();
   try {
-    const result = await pool.query(
+    await client.query("BEGIN");
+
+    const itemResult = await client.query(
       `UPDATE order_items SET item_status = $1, updated_at = NOW()
-       WHERE id = $2 AND seller = $3
+       WHERE id = $2 AND seller_id = $3
        RETURNING *`,
-      [status, itemId, seller]
+      [status, itemId, sellerId]
     );
-    if (result.rows.length === 0) {
-      // Either the item doesn't exist, or it belongs to a different seller
+    if (itemResult.rows.length === 0) {
+      await client.query("ROLLBACK");
       return res.status(404).json({ error: "Item not found for this seller" });
     }
-    res.json(result.rows[0]);
+    const updatedItem = itemResult.rows[0];
+
+    const allItemsResult = await client.query(
+      "SELECT item_status FROM order_items WHERE order_id = $1",
+      [updatedItem.order_id]
+    );
+    const statuses = allItemsResult.rows.map((r) => r.item_status);
+
+    let newOrderStatus;
+    if (statuses.every((s) => s === "cancelled")) {
+      newOrderStatus = "cancelled";
+    } else if (statuses.every((s) => s === "delivered")) {
+      newOrderStatus = "completed";
+    } else if (statuses.some((s) => s !== "pending")) {
+      newOrderStatus = "processing";
+    } else {
+      newOrderStatus = "pending";
+    }
+
+    await client.query(
+      "UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2",
+      [newOrderStatus, updatedItem.order_id]
+    );
+
+    await client.query("COMMIT");
+    res.json({ ...updatedItem, order_status: newOrderStatus });
   } catch (err) {
+    await client.query("ROLLBACK");
     console.error(err);
     res.status(500).json({ error: "Something went wrong" });
+  } finally {
+    client.release();
   }
 };
-// Customer/Admin: cancel — restocks everything, keeps the order as a record
+
 exports.cancelOrder = async (req, res) => {
   const { id } = req.params;
+  const customerId = req.user.id;
   const client = await pool.connect();
 
   try {
@@ -295,6 +433,9 @@ exports.cancelOrder = async (req, res) => {
     }
     const order = orderResult.rows[0];
 
+    if (order.customer_id !== customerId) {
+      throw { status: 403, message: "You can't cancel someone else's order" };
+    }
     if (order.status === "cancelled") {
       throw { status: 409, message: "Order is already cancelled" };
     }
@@ -303,7 +444,6 @@ exports.cancelOrder = async (req, res) => {
     }
 
     const itemsResult = await client.query("SELECT * FROM order_items WHERE order_id = $1", [id]);
-
     for (const item of itemsResult.rows) {
       await client.query("UPDATE products SET stock = stock + $1 WHERE id = $2", [item.quantity, item.product_id]);
       if (item.variant_id) {
@@ -328,12 +468,10 @@ exports.cancelOrder = async (req, res) => {
   }
 };
 
-// Admin only: hard delete — for cleaning up test/junk orders, not everyday use
 exports.deleteOrder = async (req, res) => {
   const { id } = req.params;
   try {
     const result = await pool.query("DELETE FROM orders WHERE id = $1 RETURNING id", [id]);
-    // order_items cascade-delete automatically (ON DELETE CASCADE in the schema)
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Order not found" });
     }
@@ -343,37 +481,88 @@ exports.deleteOrder = async (req, res) => {
     res.status(500).json({ error: "Something went wrong" });
   }
 };
-// Customer: aggregate stats + recent orders for the "dashboard" view
-exports.getCustomerDashboard = async (req, res) => {
-  const { email } = req.params;
-  console.log("email")
-  if (!email) {
-    return res.status(400).json({ error: "email is required" });
-  }
-
+// Seller dashboard: product + order stats scoped to this seller only
+exports.getSellerDashboard = async (req, res) => {
+  const sellerId = req.user.id;
   try {
-    const statsResult = await pool.query(
-      `SELECT COUNT(*)::int AS total_orders, COALESCE(SUM(total_amount), 0) AS total_spent
-       FROM orders WHERE LOWER(customer_email) = LOWER($1)`,
-      [email]
+    const productStats = await pool.query(
+      `SELECT COUNT(*)::int AS total_products,
+              COUNT(*) FILTER (WHERE stock <= 10)::int AS low_stock_count
+       FROM products WHERE seller_id = $1`,
+      [sellerId]
     );
-    const { total_orders, total_spent } = statsResult.rows[0];
+    const { total_products, low_stock_count } = productStats.rows[0];
 
-    const recentResult = await pool.query(
-      `SELECT * FROM orders WHERE LOWER(customer_email) = LOWER($1) ORDER BY created_at DESC LIMIT 5`,
-      [email]
+    const orderStats = await pool.query(
+      `SELECT COUNT(DISTINCT order_id)::int AS total_orders
+       FROM order_items WHERE seller_id = $1`,
+      [sellerId]
     );
-    const recentOrders = recentResult.rows;
+    const { total_orders } = orderStats.rows[0];
 
-    for (const order of recentOrders) {
-      const itemsResult = await pool.query("SELECT * FROM order_items WHERE order_id = $1", [order.id]);
-      order.items = itemsResult.rows;
-    }
+    const lowStockItems = await pool.query(
+      `SELECT id, name, image, stock FROM products WHERE seller_id = $1 AND stock <= 10 ORDER BY stock ASC LIMIT 5`,
+      [sellerId]
+    );
+
+    const recentOrders = await pool.query(
+      `SELECT oi.*, o.customer_name, o.status AS order_status, o.created_at AS order_created_at
+       FROM order_items oi
+       JOIN orders o ON o.id = oi.order_id
+       WHERE oi.seller_id = $1
+       ORDER BY oi.created_at DESC
+       LIMIT 5`,
+      [sellerId]
+    );
 
     res.json({
+      totalProducts: total_products,
       totalOrders: total_orders,
-      totalSpent: Number(total_spent),
-      recentOrders: recentOrders.map(mapOrder),
+      lowStockCount: low_stock_count,
+      lowStockItems: lowStockItems.rows,
+      recentOrders: recentOrders.rows,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+// Seller: view a single order, scoped to only their own line items within it.
+// If the seller has no items in this order, treat it as not found — don't leak
+// that the order exists or expose other sellers' items/revenue.
+exports.getSellerOrderById = async (req, res) => {
+  const sellerId = req.user.id;
+  const { id } = req.params;
+  try {
+    const itemsResult = await pool.query(
+      "SELECT * FROM order_items WHERE order_id = $1 AND seller_id = $2 ORDER BY id",
+      [id, sellerId]
+    );
+    if (itemsResult.rows.length === 0) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const orderResult = await pool.query("SELECT * FROM orders WHERE id = $1", [id]);
+    if (orderResult.rows.length === 0) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+    const order = orderResult.rows[0];
+    const items = itemsResult.rows;
+    const sellerSubtotal = items.reduce((sum, item) => sum + Number(item.subtotal), 0);
+
+    res.json({
+      id: order.id,
+      orderNumber: order.id,
+      customerName: order.customer_name,
+      email: order.customer_email,
+      phone: order.customer_phone,
+      address: order.shipping_address,
+      paymentMethod: order.payment_method,
+      status: order.status,
+      createdAt: order.created_at,
+      sellerSubtotal,
+      items,
     });
   } catch (err) {
     console.error(err);

@@ -71,3 +71,12 @@ export const getOrderStatusEmoji = (status) => {
   const config = getOrderStatus(status);
   return `${config.emoji} ${config.label}`;
 };
+export const ORDER_LEVEL_STATUSES = ["pending", "processing", "completed", "cancelled"];
+
+export const ORDER_LEVEL_STATUS_TABS = [
+  { value: "all", label: "All" },
+  ...ORDER_LEVEL_STATUSES.map((value) => ({
+    value,
+    label: value[0].toUpperCase() + value.slice(1),
+  })),
+];

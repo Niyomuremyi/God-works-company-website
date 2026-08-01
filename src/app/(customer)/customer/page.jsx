@@ -8,7 +8,9 @@ import { CustomerOrderRow, CustomerOrderRowSkeleton, CustomerOrderTableHeader } 
 import { Table, TableBody } from "@/components/ui/table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ShoppingCart } from "lucide-react";
-import { getCustomerDashboard } from "@/lib/api";
+import { getCustomerDashboard, getMyDashboard } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth";
 
 function mapOrderForTable(order) {
   return {
@@ -21,14 +23,21 @@ function mapOrderForTable(order) {
 }
 
 export default function CustomerDashboard() {
+  const { user, ready, isLoggedIn } = useAuth();
+  const router = useRouter();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getCustomerDashboard("email@gmai.com")
+    if (!ready) return;
+    if (!isLoggedIn) {
+      router.push("/login?redirect=/customer");
+      return;
+    }
+    getMyDashboard()
       .then(setData)
       .finally(() => setLoading(false));
-  }, []);
+  }, [ready, isLoggedIn]);
 
   const recentOrders = (data?.recentOrders ?? []).map(mapOrderForTable);
 
