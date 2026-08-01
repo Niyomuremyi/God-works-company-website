@@ -106,7 +106,7 @@ export default function Home({ params }) {
         </ul>
       </div>
 
-      <ImageGallery selectedVariant={selectedVariant} />
+     <ImageGallery selectedVariant={selectedVariant} productImage={product.image} />
      <VariantSelector variants={product.variants || []} price={product.price} onChange={setSelectedVariant} />
       <AddToCart
       productId={product.id}

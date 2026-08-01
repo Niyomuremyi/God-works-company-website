@@ -1,15 +1,12 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 
-export default function ImageGallery({ selectedVariant }) {
-  const items = [
-    { type: "image", src: "/product-images/shoe1.jpg" },
-    { type: "image", src: "/product-images/shoe2.jpg" },
-    { type: "image", src: "/product-images/shoe3.jpg" },
-    { type: "video", src: "/product-images/shoe-video.mp4" },
-  ];
+export default function ImageGallery({ selectedVariant, productImage }) {
+  const items = productImage
+    ? [{ type: "image", src: productImage }]
+    : [];
 
-  const [selected, setSelected] = useState(items[0]);
+  const [selected, setSelected] = useState(items[0] || { type: "image", src: "" });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [scale, setScale] = useState(1);
   const lastDist = useRef(null);
