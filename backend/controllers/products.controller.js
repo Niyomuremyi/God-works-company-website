@@ -140,3 +140,31 @@ exports.getMyProducts = async (req, res) => {
     res.status(500).json({ error: "Something went wrong" });
   }
 };
+
+exports.getProductReviews = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const reviewsResult = await pool.query(
+      `SELECT r.rating, r.comment, r.created_at, u.name AS customer_name
+       FROM product_reviews r
+       JOIN users u ON u.id = r.customer_id
+       WHERE r.product_id = $1
+       ORDER BY r.created_at DESC`,
+      [id]
+    );
+    const statsResult = await pool.query(
+      `SELECT COUNT(*)::int AS review_count, COALESCE(AVG(rating), 0) AS average_rating
+       FROM product_reviews WHERE product_id = $1`,
+      [id]
+    );
+
+    res.json({
+      reviews: reviewsResult.rows,
+      reviewCount: statsResult.rows[0].review_count,
+      averageRating: Number(statsResult.rows[0].average_rating).toFixed(1),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};

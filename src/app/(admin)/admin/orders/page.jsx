@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Pencil } from "lucide-react";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -15,25 +15,13 @@ import {
 } from "@/components/ui/table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { AdminSearch } from "@/components/admin";
+import { StatusUpdateModal } from "@/components/shared/StatusUpdateModal";
 import { useAuth } from "@/lib/auth";
 import { getSellerOrders, updateOrderItemStatus, ApiError } from "@/lib/api";
+import { useToast } from "@/components/shared/Toast";
 
 const ITEM_STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
 const ITEM_STATUS_TABS = [{ value: "all", label: "All" }, ...ITEM_STATUSES.map((s) => ({ value: s, label: s[0].toUpperCase() + s.slice(1) }))];
-
-function mapItemForTable(item) {
-  return {
-    id: item.id,
-    orderId: item.order_id,
-    product: item.product_name,
-    quantity: item.quantity,
-    subtotal: Number(item.subtotal),
-    customer: item.customer_name,
-    email: item.customer_email,
-    status: item.item_status,
-    date: item.order_created_at?.slice(0, 10),
-  };
-}
 
 function statusBadgeClass(status) {
   switch (status) {
@@ -53,6 +41,8 @@ export default function SellerOrdersPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editingItem, setEditingItem] = useState(null);
+  const toast = useToast();
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -60,8 +50,9 @@ export default function SellerOrdersPage() {
     try {
       setItems(await getSellerOrders());
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to load orders");
-    } finally {
+  setItems(previous);
+  toast(err instanceof ApiError ? err.message : "Failed to update item status", { type: "error" });
+}finally {
       setLoading(false);
     }
   }, []);
@@ -75,32 +66,39 @@ export default function SellerOrdersPage() {
     loadOrders();
   }, [ready, isLoggedIn, loadOrders]);
 
-  const handleStatusChange = async (itemId, status) => {
-  const previous = items;
-  setItems((current) => current.map((i) => (i.id === itemId ? { ...i, item_status: status } : i)));
-  try {
-    await updateOrderItemStatus(itemId, status);
-  } catch (err) {
-    setItems(previous);
-    alert(err instanceof ApiError ? err.message : "Failed to update item status");
-  }
-};
+  const handleStatusChange = async (itemId, status, note, estimatedDelivery, cancellationReason) => {
+    const previous = items;
+    setItems((current) =>
+      current.map((i) =>
+        i.id === itemId ? { ...i, item_status: status, carrier_note: note, estimated_delivery: estimatedDelivery } : i
+      )
+    );
+    try {
+      await updateOrderItemStatus(itemId, { status, note, estimatedDelivery, cancellationReason });
+      toast("Order status updated", { type: "success" });
+    } catch (err) {
+      setItems(previous);
+      alert(err instanceof ApiError ? err.message : "Failed to update item status");
+    }
+  };
 
-  const filteredItems = items
-    .map(mapItemForTable)
-    .filter((item) => statusFilter === "all" || item.status === statusFilter)
-    .filter((item) => {
-      const q = searchQuery.toLowerCase();
-      if (!q) return true;
-      return item.email?.toLowerCase().includes(q) || item.product?.toLowerCase().includes(q) || String(item.orderId).includes(q);
-    });
+  const filteredItems = items.filter((item) => {
+    if (statusFilter !== "all" && item.item_status !== statusFilter) return false;
+    const q = searchQuery.toLowerCase();
+    if (!q) return true;
+    return (
+      item.customer_email?.toLowerCase().includes(q) ||
+      item.product_name?.toLowerCase().includes(q) ||
+      String(item.order_id).includes(q)
+    );
+  });
 
   return (
     <div className="space-y-4 sm:space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 sm:text-3xl">Orders</h1>
         <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400 sm:text-base">
-          Line items from customer orders that include your products
+          Line items from customer orders that include your products. Click a row to view full order details.
         </p>
       </div>
 
@@ -152,32 +150,46 @@ export default function SellerOrdersPage() {
                     </TableRow>
                   ))
                 : filteredItems.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-mono text-xs text-zinc-500">#{item.orderId}</TableCell>
-                      <TableCell className="font-medium">{item.product}</TableCell>
+                    <TableRow
+                      key={item.id}
+                      onClick={() => router.push(`/admin/orders/${item.order_id}`)}
+                      className="cursor-pointer"
+                    >
+                      <TableCell className="font-mono text-xs text-zinc-500">#{item.order_id}</TableCell>
+                      <TableCell className="font-medium">{item.product_name}</TableCell>
                       <TableCell>
-                        <div className="text-sm">{item.customer}</div>
-                        <div className="text-xs text-zinc-500">{item.email}</div>
+                        <div className="text-sm">{item.customer_name}</div>
+                        <div className="text-xs text-zinc-500">{item.customer_email}</div>
                       </TableCell>
                       <TableCell>{item.quantity}</TableCell>
-                      <TableCell>${item.subtotal.toFixed(2)}</TableCell>
-                      <TableCell className="text-sm text-zinc-500">{item.date}</TableCell>
+                      <TableCell>${Number(item.subtotal).toFixed(2)}</TableCell>
+                      <TableCell className="text-sm text-zinc-500">{item.order_created_at?.slice(0, 10)}</TableCell>
                       <TableCell>
-                        <select
-                          value={item.status}
-                          onChange={(e) => handleStatusChange(item.id, e.target.value)}
-                          className={`rounded-md border-0 px-2 py-1 text-xs font-medium ${statusBadgeClass(item.status)}`}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingItem(item);
+                          }}
+                          className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-opacity hover:opacity-80 ${statusBadgeClass(item.item_status)}`}
                         >
-                          {ITEM_STATUSES.map((s) => (
-                            <option key={s} value={s}>{s[0].toUpperCase() + s.slice(1)}</option>
-                          ))}
-                        </select>
+                          <Pencil className="h-3 w-3" />
+                          {item.item_status[0].toUpperCase() + item.item_status.slice(1)}
+                        </button>
                       </TableCell>
                     </TableRow>
                   ))}
             </TableBody>
           </Table>
         </div>
+      )}
+
+      {editingItem && (
+        <StatusUpdateModal
+          item={editingItem}
+          onClose={() => setEditingItem(null)}
+          onSubmit={handleStatusChange}
+        />
       )}
     </div>
   );

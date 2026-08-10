@@ -3,12 +3,152 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import { ArrowLeft, MapPin, CreditCard } from "lucide-react";
+import { ArrowLeft, MapPin, CreditCard, ChevronDown, ChevronUp, RotateCcw, Star } from "lucide-react";
 import { OrderStatusBadge } from "@/components/shared/OrderStatusBadge";
+import { TrackingTimeline } from "@/components/shared/TrackingTimeline";
+import { ReturnRequestModal } from "@/components/shared/ReturnRequestModal";
+import { ReviewModal } from "@/components/shared/ReviewModal";
 import { formatPrice, formatDate } from "@/lib/utils";
-import { getMyOrderById, ApiError } from "@/lib/api";
+import { getMyOrderById, getOrderItemTracking, createReturnRequest, createReview, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useToast } from "@/components/shared/Toast";
+
+function TrackableItem({ item }) {
+  const [expanded, setExpanded] = useState(false);
+  const [tracking, setTracking] = useState(null);
+  const [loadingTracking, setLoadingTracking] = useState(false);
+  const [returnModalOpen, setReturnModalOpen] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [returnRequested, setReturnRequested] = useState(false);
+  const [returnStatus, setReturnStatus] = useState(item.return_status);
+  const [reviewSubmitted, setReviewSubmitted] = useState(item.has_review);
+const toast = useToast();
+
+  const handleToggle = async () => {
+    const next = !expanded;
+    setExpanded(next);
+    if (next && !tracking) {
+      setLoadingTracking(true);
+      try {
+        const data = await getOrderItemTracking(item.id);
+        setTracking(data);
+      } catch {
+        setTracking({ history: [], status: item.item_status });
+      } finally {
+        setLoadingTracking(false);
+      }
+    }
+  };
+
+    const handleReturnSubmit = async (itemId, reason) => {
+    try {
+      await createReturnRequest(itemId, reason);
+      setReturnStatus("requested");
+      toast("Return request submitted", { type: "success" });
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : "Failed to submit return request", { type: "error" });
+    }
+  };
+
+  const handleReviewSubmit = async (itemId, rating, comment) => {
+    try {
+      await createReview(itemId, rating, comment);
+      setReviewSubmitted(true);
+    toast("Review submitted — thank you!", { type: "success" });
+    } catch (err) {
+        toast(err instanceof ApiError ? err.message : "Failed to submit review", { type: "error" });
+    }
+  };
+
+
+  const isDelivered = item.item_status === "delivered";
+
+  return (
+    <div className="px-4 py-3 sm:px-6 sm:py-4">
+      <div className="flex gap-3 sm:gap-4">
+        <div className="flex-1">
+          <span className="text-sm font-medium sm:text-base">{item.product_name}</span>
+          <p className="mt-1 text-xs text-zinc-500 sm:text-sm">
+            Qty: {item.quantity} × {formatPrice(Number(item.price))}
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-sm font-medium sm:text-base">{formatPrice(Number(item.subtotal))}</p>
+        </div>
+      </div>
+
+      <div className="mt-2 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={handleToggle}
+          className="flex items-center gap-1 text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+        >
+          {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          Track package
+        </button>
+
+        {isDelivered && returnStatus === null && (
+  <button type="button" onClick={() => setReturnModalOpen(true)} className="flex items-center gap-1 text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100">
+    <RotateCcw className="h-3.5 w-3.5" />
+    Request Return
+  </button>
+)}
+        {returnStatus === "requested" && (
+  <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Return requested — awaiting seller review</span>
+)}
+{returnStatus === "approved" && (
+  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Return approved</span>
+)}
+{returnStatus === "rejected" && (
+  <span className="text-xs font-medium text-red-600 dark:text-red-400">Return rejected</span>
+)}
+        {isDelivered && !reviewSubmitted && (
+          <button
+            type="button"
+            onClick={() => setReviewModalOpen(true)}
+            className="flex items-center gap-1 text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          >
+            <Star className="h-3.5 w-3.5" />
+            Leave a Review
+          </button>
+        )}
+        {reviewSubmitted && (
+          <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Review submitted</span>
+        )}
+      </div>
+
+      {expanded && (
+        <div className="mt-3">
+          {loadingTracking ? (
+            <div className="h-24 animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-800" />
+          ) : (
+            <TrackingTimeline
+              history={tracking?.history ?? []}
+              currentStatus={tracking?.status ?? item.item_status}
+              estimatedDelivery={tracking?.estimatedDelivery}
+              carrierNote={tracking?.carrierNote}
+            />
+          )}
+        </div>
+      )}
+
+      {returnModalOpen && (
+        <ReturnRequestModal
+          item={item}
+          onClose={() => setReturnModalOpen(false)}
+          onSubmit={handleReturnSubmit}
+        />
+      )}
+      {reviewModalOpen && (
+        <ReviewModal
+          item={item}
+          onClose={() => setReviewModalOpen(false)}
+          onSubmit={handleReviewSubmit}
+        />
+      )}
+    </div>
+  );
+}
 
 export default function CustomerOrderDetailPage() {
   const { id } = useParams();
@@ -68,22 +208,7 @@ export default function CustomerOrderDetailPage() {
             </div>
             <div className="divide-y dark:divide-zinc-800">
               {(order.items ?? []).map((item) => (
-                <div key={item.id} className="flex gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4">
-                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-800 sm:h-20 sm:w-20" />
-                  <div className="flex flex-1 flex-col justify-between">
-                    <div>
-                      <span className="text-sm font-medium sm:text-base">{item.product_name}</span>
-                      <p className="mt-1 text-xs text-zinc-500 sm:text-sm">
-                        Qty: {item.quantity} × {formatPrice(Number(item.price))}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium sm:text-base">
-                      {formatPrice(Number(item.subtotal))}
-                    </p>
-                  </div>
-                </div>
+                <TrackableItem key={item.id} item={item} />
               ))}
             </div>
           </div>
