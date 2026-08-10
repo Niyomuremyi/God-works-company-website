@@ -8,7 +8,9 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
+import { CardSkeleton } from "@/components/ui/CardSkeleton";
 import { getCustomerAddresses, createAddress, updateAddress, deleteAddress, ApiError } from "@/lib/api";
+import { useToast } from "@/components/shared/Toast";
 
 const emptyForm = {
   label: "Home",
@@ -32,6 +34,7 @@ export default function AddressesPage() {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const toast = useToast();
 
   const load = () => {
     setLoading(true);
@@ -89,11 +92,12 @@ export default function AddressesPage() {
       }
       closeForm();
       load();
-    } catch (err) {
-      alert(err instanceof ApiError ? err.message : "Failed to save address");
-    } finally {
-      setSaving(false);
-    }
+toast(editingId ? "Address updated" : "Address added", { type: "success" });
+    }  catch (err) {
+  toast(err instanceof ApiError ? err.message : "Failed to save address", { type: "error" });
+} finally {
+  setSaving(false);
+}
   };
 
   const handleDelete = async (id) => {
@@ -101,10 +105,12 @@ export default function AddressesPage() {
     setAddresses((current) => current.filter((a) => a.id !== id));
     try {
       await deleteAddress(id);
+
+toast("Address deleted", { type: "success" });
     } catch (err) {
-      setAddresses(previous);
-      alert(err instanceof ApiError ? err.message : "Failed to delete address");
-    }
+  setAddresses(previous);
+  toast(err instanceof ApiError ? err.message : "Failed to delete address", { type: "error" });
+}
   };
 
   return (
@@ -164,13 +170,17 @@ export default function AddressesPage() {
 
       {error && <p className="text-sm text-red-500">{error}</p>}
 
-      {!loading && addresses.length === 0 && !formOpen ? (
-        <EmptyState
-          icon={MapPin}
-          title="No saved addresses"
-          description="Add an address to speed up checkout next time."
-        />
-      ) : (
+      {loading ? (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {Array.from({ length: 2 }).map((_, i) => <CardSkeleton key={i} />)}
+          </div>
+        ) : addresses.length === 0 && !formOpen ? (
+          <EmptyState
+            icon={MapPin}
+            title="No saved addresses"
+            description="Add an address to speed up checkout next time."
+          />
+        ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {addresses.map((address) => (
             <div

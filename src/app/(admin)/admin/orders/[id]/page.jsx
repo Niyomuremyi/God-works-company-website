@@ -5,11 +5,11 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, MapPin, User } from "lucide-react";
 import { OrderStatusBadge } from "@/components/shared/OrderStatusBadge";
+import { StatusUpdateModal } from "@/components/shared/StatusUpdateModal";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { getSellerOrderById, updateOrderItemStatus, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-
-const ITEM_STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
+import { useToast } from "@/components/shared/Toast";
 
 function statusBadgeClass(status) {
   switch (status) {
@@ -28,6 +28,8 @@ export default function SellerOrderDetailPage() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editingItem, setEditingItem] = useState(null);
+  const toast = useToast();
 
   useEffect(() => {
     if (!ready) return;
@@ -41,24 +43,25 @@ export default function SellerOrderDetailPage() {
       .finally(() => setLoading(false));
   }, [ready, isLoggedIn, id]);
 
- const handleStatusChange = async (itemId, status) => {
-  const previous = order;
-  setOrder((current) => ({
-    ...current,
-    items: current.items.map((i) => (i.id === itemId ? { ...i, item_status: status } : i)),
-  }));
-  try {
-    const updated = await updateOrderItemStatus(itemId, status);
+  const handleStatusChange = async (itemId, status, note, estimatedDelivery) => {
+    const previous = order;
     setOrder((current) => ({
       ...current,
-      status: updated.order_status,
-      items: current.items.map((i) => (i.id === itemId ? { ...i, item_status: status } : i)),
+      items: current.items.map((i) =>
+        i.id === itemId
+          ? { ...i, item_status: status, carrier_note: note, estimated_delivery: estimatedDelivery }
+          : i
+      ),
     }));
-  } catch (err) {
-    setOrder(previous);
-    alert(err instanceof ApiError ? err.message : "Failed to update item status");
-  }
-};
+    try {
+      const updated = await updateOrderItemStatus(itemId, { status, note, estimatedDelivery });
+      setOrder((current) => ({ ...current, status: updated.order_status }));
+      toast("Order status updated", { type: "success" });
+    } catch (err) {
+      setOrder(previous);
+  toast(err instanceof ApiError ? err.message : "Failed to update item status", { type: "error" })
+    }
+  };
 
   if (loading) return <p className="text-sm text-zinc-500">Loading order...</p>;
 
@@ -112,21 +115,22 @@ export default function SellerOrderDetailPage() {
                     <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                       Qty: {item.quantity} × {formatPrice(Number(item.price))}
                     </p>
+                    {item.carrier_note && (
+                      <p className="mt-1 text-xs italic text-zinc-500 dark:text-zinc-400">"{item.carrier_note}"</p>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-3">
                     <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                       {formatPrice(Number(item.subtotal))}
                     </p>
-                    <select
-                      value={item.item_status}
-                      onChange={(e) => handleStatusChange(item.id, e.target.value)}
-                      className={`rounded-md border-0 px-2 py-1 text-xs font-medium ${statusBadgeClass(item.item_status)}`}
+                    <button
+                      type="button"
+                      onClick={() => setEditingItem(item)}
+                      className={`rounded-md px-2 py-1 text-xs font-medium ${statusBadgeClass(item.item_status)}`}
                     >
-                      {ITEM_STATUSES.map((s) => (
-                        <option key={s} value={s}>{s[0].toUpperCase() + s.slice(1)}</option>
-                      ))}
-                    </select>
+                      {item.item_status[0].toUpperCase() + item.item_status.slice(1)}
+                    </button>
                   </div>
                 </div>
               ))}
@@ -169,6 +173,14 @@ export default function SellerOrderDetailPage() {
           )}
         </div>
       </div>
+
+      {editingItem && (
+        <StatusUpdateModal
+          item={editingItem}
+          onClose={() => setEditingItem(null)}
+          onSubmit={handleStatusChange}
+        />
+      )}
     </div>
   );
 }

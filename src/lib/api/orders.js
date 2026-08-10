@@ -45,10 +45,13 @@ export const getMyDashboard = () => request(`/api/orders/me/dashboard`);
 
 // Orders (Seller) — identity comes from the token now
 export const getSellerOrders = () => request(`/api/orders/seller/me`);
-export const updateOrderItemStatus = (itemId, status) =>
+
+export const getOrderItemTracking = (itemId) => request(`/api/orders/items/${itemId}/tracking`);
+
+export const updateOrderItemStatus = (itemId, { status, note, estimatedDelivery, cancellationReason }) =>
   request(`/api/orders/items/${itemId}/status`, {
     method: "PATCH",
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({ status, note, estimatedDelivery, cancellationReason }),
   });
 
 export const getProducts = () =>
@@ -146,6 +149,31 @@ export async function deleteAddress(id) {
 }
 export const getSellerDashboard = () => request(`/api/orders/seller/me/dashboard`);
 export const getMyProducts = () => request(`/api/products/mine`);
-export const cancelOrder = (id) =>
-  request(`/api/orders/${id}/cancel`, { method: "PATCH" });
+export const cancelOrder = (id, reason) =>
+  request(`/api/orders/${id}/cancel`, {
+    method: "PATCH",
+    body: JSON.stringify({ reason }),
+  });
 export const getSellerOrderById = (id) => request(`/api/orders/seller/me/${id}`);
+
+export const createReturnRequest = (itemId, reason) =>
+  request(`/api/orders/items/${itemId}/return`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });
+
+export const createReview = (itemId, rating, comment) =>
+  request(`/api/orders/items/${itemId}/review`, {
+    method: "POST",
+    body: JSON.stringify({ rating, comment }),
+  });
+
+export const getSellerReturns = () => request(`/api/orders/seller/me/returns`);
+
+export const resolveReturnRequest = (returnId, decision, resolutionNote) =>
+  request(`/api/orders/returns/${returnId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ decision, resolutionNote }),
+  });
+
+export const getSellerEarnings = () => request(`/api/orders/seller/me/earnings`);

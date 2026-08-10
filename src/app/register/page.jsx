@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { register } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { ready, isLoggedIn, user } = useAuth();
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -21,6 +25,13 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (!ready) return;
+    if (isLoggedIn) {
+      router.replace(user.role === "seller" ? "/admin" : "/");
+    }
+  }, [ready, isLoggedIn, user]);
+
   const isSeller = form.role === "seller";
 
   const handleChange = (e) => {
@@ -33,28 +44,18 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(
-        "https://god-works-company-website-production.up.railway.app/api/auth/register",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
-        }
-      );
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Registration failed");
-        setLoading(false);
-        return;
-      }
-
+      await register(form);
       router.push("/login");
     } catch (err) {
-      setError("Something went wrong");
+      setError(err.message || "Registration failed");
+    } finally {
       setLoading(false);
     }
   };
+
+  if (!ready || isLoggedIn) {
+    return null;
+  }
 
   return (
     <div className="mx-auto flex max-w-md flex-col gap-6 px-4 py-16">
@@ -126,6 +127,13 @@ export default function RegisterPage() {
         <Button type="submit" disabled={loading}>
           {loading ? "Creating account..." : "Register"}
         </Button>
+
+        <p className="text-center text-sm text-zinc-500">
+          Already have an account?{" "}
+          <Link href="/login" className="font-medium text-zinc-900 hover:underline">
+            Log in
+          </Link>
+        </p>
       </form>
     </div>
   );

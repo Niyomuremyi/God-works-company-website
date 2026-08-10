@@ -10,10 +10,6 @@ function AppLayout({ children }) {
     <>
       <Header />
       <main>{children}</main>
-      {/* <CartSheet />
-      <ChatSheet /> */}
-      {/* <Toaster position="bottom-center" /> */}
-      {/* <SanityLive /> */}
     </>
   );
 }
