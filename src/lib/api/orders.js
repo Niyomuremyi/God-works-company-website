@@ -25,6 +25,10 @@ async function request(path, options = {}) {
 
   if (res.status === 401) {
     clearSession(); // token expired/invalid — drop the stale session
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
+    throw new ApiError("Session expired", 401); // stop execution here
   }
 
   let data = null;
