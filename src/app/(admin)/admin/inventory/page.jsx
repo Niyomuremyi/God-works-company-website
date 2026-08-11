@@ -1,12 +1,13 @@
 "use client";
 
-import { Suspense, useState, useTransition } from "react";
+import { Suspense, useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Package, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Table, TableBody } from "@/components/ui/table";
+import { getMyProducts } from "@/lib/api";
 
 import {
   ProductRow,
@@ -67,13 +68,19 @@ function InventoryContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  // HARD CODED PRODUCTS
-  const [products, setProducts] = useState([
-    { id: "1", name: "Laptop", stock: 10, price: 1200 },
-    { id: "2", name: "Keyboard", stock: 25, price: 80 },
-    { id: "3", name: "Mouse", stock: 40, price: 50 },
-    { id: "4", name: "Monitor", stock: 8, price: 400 },
-  ]);
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+ useEffect(() => {
+    getMyProducts()
+      .then((data) =>
+        setProducts(
+          (data || []).map((p) => ({ ...p, price: Number(p.price) }))
+        )
+      )
+      .catch((err) => console.error("Failed to load products", err))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   // SIMPLE SEARCH FILTER
   const filteredProducts = products.filter((p) =>
@@ -131,13 +138,15 @@ function InventoryContent() {
       />
 
       {/* Product List */}
-      <Suspense fallback={<ProductListSkeleton />}>
+     {isLoading ? (
+        <ProductListSkeleton />
+      ) : (
         <ProductListContent
           products={filteredProducts}
           onCreateProduct={handleCreateProduct}
           isCreating={isPending}
         />
-      </Suspense>
+      )}
     </div>
   );
 }
