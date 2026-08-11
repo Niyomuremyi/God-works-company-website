@@ -31,6 +31,8 @@ export default function ProductDetailPage({ params }) {
   });
 
   const [isSaving, setIsSaving] = useState(false);
+
+  const [isUploading, setIsUploading] = useState(false);
   
     const { user, ready, isLoggedIn } = useAuth();
 
@@ -47,6 +49,32 @@ export default function ProductDetailPage({ params }) {
        setIsSaving(false);
      }
     };
+
+    const handleImageUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  setIsUploading(true);
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "product_uploads");
+
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/srjlywlc/image/upload",
+      { method: "POST", body: formData }
+    );
+    const data = await res.json();
+
+    if (!data.secure_url) throw new Error("Upload failed");
+    updateField("image", data.secure_url);
+  } catch (err) {
+    console.error(err);
+    alert("Image upload failed");
+  } finally {
+    setIsUploading(false);
+  }
+};
 
   const updateField = (field, value) => {
     setProduct((prev) => ({
@@ -155,13 +183,13 @@ export default function ProductDetailPage({ params }) {
                   />
                 </div>
 
-                <div>
-                <Label>Image URL</Label>
-                <Input
-                  value={product.image}
-                  onChange={(e) => updateField("image", e.target.value)}
-                  placeholder="/product-images/example.jpg"
-                />
+              <div>
+                <Label>Product Image</Label>
+                <Input type="file" accept="image/*" onChange={handleImageUpload} />
+                {isUploading && <p className="text-sm text-zinc-500 mt-1">Uploading...</p>}
+                {product.image && !isUploading && (
+                  <img src={product.image} alt="Preview" className="mt-2 h-32 w-32 object-cover rounded-lg border" />
+                )}
               </div>
 
                 <div>
