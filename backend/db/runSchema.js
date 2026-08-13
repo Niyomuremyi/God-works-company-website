@@ -5,7 +5,7 @@ const pool = require("../config/db");
 async function runSchema() {
   try {
     const schema = fs.readFileSync(
-      path.join(__dirname, "password.sql"),
+      path.join(__dirname, "conversations.sql"),
       "utf8"
     );
     

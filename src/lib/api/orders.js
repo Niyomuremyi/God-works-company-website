@@ -75,7 +75,7 @@ export const createOrder = (input) =>
   });
 
 export const getOrderById = (id) =>
-  request(`/api/orders/${id}`);
+  request(`/api/orders/me/${id}`);
 
 export const getCustomerOrders = (email) =>
   request(`/api/orders/customer/${email}`);
