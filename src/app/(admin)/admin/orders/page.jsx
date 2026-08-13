@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ShoppingCart, Pencil } from "lucide-react";
+import { ShoppingCart, Pencil, Download } from "lucide-react";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -19,6 +19,8 @@ import { StatusUpdateModal } from "@/components/shared/StatusUpdateModal";
 import { useAuth } from "@/lib/auth";
 import { getSellerOrders, updateOrderItemStatus, ApiError } from "@/lib/api";
 import { useToast } from "@/components/shared/Toast";
+import { downloadCsv } from "@/lib/csv";
+import { Button } from "@/components/ui/button";
 
 const ITEM_STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
 const ITEM_STATUS_TABS = [{ value: "all", label: "All" }, ...ITEM_STATUSES.map((s) => ({ value: s, label: s[0].toUpperCase() + s.slice(1) }))];
@@ -42,6 +44,8 @@ export default function SellerOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const toast = useToast();
 
   const loadOrders = useCallback(async () => {
@@ -84,6 +88,11 @@ export default function SellerOrdersPage() {
 
   const filteredItems = items.filter((item) => {
     if (statusFilter !== "all" && item.item_status !== statusFilter) return false;
+
+    const itemDate = item.order_created_at?.slice(0, 10);
+    if (dateFrom && itemDate < dateFrom) return false;
+    if (dateTo && itemDate > dateTo) return false;
+  
     const q = searchQuery.toLowerCase();
     if (!q) return true;
     return (
@@ -92,23 +101,64 @@ export default function SellerOrdersPage() {
       String(item.order_id).includes(q)
     );
   });
-
+const handleExport = () => {
+  downloadCsv(`orders-${new Date().toISOString().slice(0, 10)}.csv`, filteredItems, [
+    { label: "Order #", value: (i) => i.order_id },
+    { label: "Product", value: (i) => i.product_name },
+    { label: "Customer", value: (i) => i.customer_name },
+    { label: "Email", value: (i) => i.customer_email },
+    { label: "Quantity", value: (i) => i.quantity },
+    { label: "Subtotal", value: (i) => Number(i.subtotal).toFixed(2) },
+    { label: "Status", value: (i) => i.item_status },
+    { label: "Date", value: (i) => i.order_created_at?.slice(0, 10) },
+  ]);
+};
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 sm:text-3xl">Orders</h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400 sm:text-base">
-          Line items from customer orders that include your products. Click a row to view full order details.
-        </p>
-      </div>
+      <div className="flex items-center justify-between">
+  <div>
+    <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 sm:text-3xl">Orders</h1>
+    <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400 sm:text-base">
+      Line items from customer orders that include your products. Click a row to view full order details.
+    </p>
+  </div>
+  <Button variant="outline" size="sm" onClick={handleExport} disabled={filteredItems.length === 0}>
+    <Download className="mr-2 h-4 w-4" />
+    Export CSV
+  </Button>
+</div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <AdminSearch
           placeholder="Search by product, order #, or email..."
           value={searchQuery}
           onChange={setSearchQuery}
           className="w-full sm:max-w-xs"
         />
+        <div className="flex items-center gap-2 text-sm">
+    <input
+      type="date"
+      value={dateFrom}
+      onChange={(e) => setDateFrom(e.target.value)}
+      className="rounded-md border border-zinc-200 px-2 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+    />
+    <span className="text-zinc-400">to</span>
+    <input
+      type="date"
+      value={dateTo}
+      onChange={(e) => setDateTo(e.target.value)}
+      className="rounded-md border border-zinc-200 px-2 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+    />
+    {(dateFrom || dateTo) && (
+      <button
+        type="button"
+        onClick={() => { setDateFrom(""); setDateTo(""); }}
+        className="text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+      >
+        Clear
+      </button>
+    )}
+  </div>
         <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
           <Tabs value={statusFilter} onValueChange={setStatusFilter}>
             <TabsList className="w-max">

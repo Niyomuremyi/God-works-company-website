@@ -100,19 +100,26 @@ export function DashboardShell({
 
               return (
                 <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
-                      : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-100"
-                  )}
-                >
-                  <item.icon className="h-5 w-5" />
-                  {item.label}
-                </Link>
+  key={item.href}
+  href={item.href}
+  onClick={() => setSidebarOpen(false)}
+  className={cn(
+    "flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+    isActive
+      ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
+      : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-100"
+  )}
+>
+  <span className="flex items-center gap-3">
+    <item.icon className="h-5 w-5" />
+    {item.label}
+  </span>
+  {item.badgeCount > 0 && (
+    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-medium text-white">
+      {item.badgeCount > 9 ? "9+" : item.badgeCount}
+    </span>
+  )}
+</Link>
               );
             })}
           </nav>
