@@ -123,10 +123,10 @@ function ProductRowContent({ id, name, slug, stock, price, featured, category, i
         </Link>
       </TableCell>
 
-      {/* Price */}
+     {/* Price */}
       <TableCell className="hidden py-4 md:table-cell">
         <Suspense fallback={<Skeleton className="h-8 w-24" />}>
-          <PriceInput id={id} price={price} />
+          <PriceInput id={id} price={price} onChange={onPriceChange} />
         </Suspense>
       </TableCell>
 
@@ -134,7 +134,7 @@ function ProductRowContent({ id, name, slug, stock, price, featured, category, i
       <TableCell className="hidden py-4 md:table-cell">
         <div className="flex items-center gap-2">
           <Suspense fallback={<Skeleton className="h-8 w-20" />}>
-            <StockInput id={id} stock={stock} />
+            <StockInput id={id} stock={stock} onChange={onStockChange} />
           </Suspense>
 
           {outOfStock && (
