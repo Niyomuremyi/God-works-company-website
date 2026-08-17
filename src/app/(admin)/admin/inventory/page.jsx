@@ -7,7 +7,7 @@ import { Plus, Package, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Table, TableBody } from "@/components/ui/table";
-import { getMyProducts } from "@/lib/api";
+import { getMyProducts, updateProduct } from "@/lib/api";
 
 import {
   ProductRow,
@@ -16,7 +16,7 @@ import {
   ProductTableHeader,
 } from "@/components/admin";
 
-function ProductListContent({ products, onCreateProduct, isCreating }) {
+function ProductListContent({ products, onCreateProduct, isCreating, onPriceChange, onStockChange }) {
   if (!products || products.length === 0) {
     return (
       <EmptyState
@@ -39,7 +39,12 @@ function ProductListContent({ products, onCreateProduct, isCreating }) {
         <ProductTableHeader />
         <TableBody>
           {products.map((product) => (
-            <ProductRow key={product.id} {...product} />
+            <ProductRow
+              key={product.id}
+              {...product}
+              onPriceChange={onPriceChange}
+              onStockChange={onStockChange}
+            />
           ))}
         </TableBody>
       </Table>
@@ -82,7 +87,26 @@ function InventoryContent() {
       .finally(() => setIsLoading(false));
   }, []);
 
+const handlePriceChange = (id, newPrice) => {
+    setProducts((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, price: newPrice } : p))
+    );
+    updateProduct(id, { price: newPrice }).catch((err) =>
+      console.error("Failed to update price", err)
+    );
+  };
+
+  const handleStockChange = (id, newStock) => {
+    setProducts((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, stock: newStock } : p))
+    );
+    updateProduct(id, { stock: newStock }).catch((err) =>
+      console.error("Failed to update stock", err)
+    );
+  };
+
   // SIMPLE SEARCH FILTER
+
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -145,6 +169,8 @@ function InventoryContent() {
           products={filteredProducts}
           onCreateProduct={handleCreateProduct}
           isCreating={isPending}
+          onPriceChange={handlePriceChange}
+          onStockChange={handleStockChange}
         />
       )}
     </div>

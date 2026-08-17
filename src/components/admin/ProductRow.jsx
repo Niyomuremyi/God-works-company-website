@@ -16,7 +16,7 @@ import { StockInput } from "./StockInput";
 import { PriceInput } from "./PriceInput";
 import { FeaturedToggle } from "./FeaturedToggle";
 
-function ProductRowContent({ id, name, slug, stock, price, featured, category, image }) {
+ function ProductRowContent({ id, name, slug, stock, price, featured, category, image, onPriceChange, onStockChange }) {
   const lowStock = isLowStock(stock);
   const outOfStock = isOutOfStock(stock);
 
