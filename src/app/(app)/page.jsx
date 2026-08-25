@@ -20,7 +20,8 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const res = await fetch("https://god-works-company-website-production.up.railway.app/api/products");
+        console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`);
         const data = await res.json();
 
         const mapped = data.map((p) => ({

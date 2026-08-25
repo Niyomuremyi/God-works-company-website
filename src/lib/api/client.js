@@ -16,7 +16,7 @@ export class ApiError extends Error {
 export async function request(path, options = {}) {
   const token = getToken();
   console.log(token)
-
+  console.log("Requesting:", `${API_BASE_URL}${path}`);
   const res = await fetch(`${API_BASE_URL}${path}`, {
     credentials: "include",
     ...options,

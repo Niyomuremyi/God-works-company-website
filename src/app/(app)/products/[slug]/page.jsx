@@ -23,7 +23,7 @@ export default function Home({ params }) {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const res = await fetch("https://god-works-company-website-production.up.railway.app/api/products") ;
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`);
         const data = await res.json();
 
         const current = data.find((p) => p.slug === slug);
