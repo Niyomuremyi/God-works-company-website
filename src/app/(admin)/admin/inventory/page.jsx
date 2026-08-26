@@ -7,7 +7,7 @@ import { Plus, Package, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Table, TableBody } from "@/components/ui/table";
-import { getMyProducts, updateProduct } from "@/lib/api";
+import { getMyProducts, updateProduct, deleteProduct } from "@/lib/api";
 
 import {
   ProductRow,
@@ -16,7 +16,7 @@ import {
   ProductTableHeader,
 } from "@/components/admin";
 
-function ProductListContent({ products, onCreateProduct, isCreating, onPriceChange, onStockChange }) {
+function ProductListContent({ products, onCreateProduct, isCreating, onPriceChange, onStockChange, onDelete }) {
   if (!products || products.length === 0) {
     return (
       <EmptyState
@@ -39,11 +39,12 @@ function ProductListContent({ products, onCreateProduct, isCreating, onPriceChan
         <ProductTableHeader />
         <TableBody>
           {products.map((product) => (
-            <ProductRow
+                       <ProductRow
               key={product.id}
               {...product}
               onPriceChange={onPriceChange}
               onStockChange={onStockChange}
+              onDelete={onDelete}
             />
           ))}
         </TableBody>
@@ -103,6 +104,15 @@ const handlePriceChange = (id, newPrice) => {
     updateProduct(id, { stock: newStock }).catch((err) =>
       console.error("Failed to update stock", err)
     );
+  };
+
+    const handleDeleteProduct = (id) => {
+    const prevProducts = products;
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+    deleteProduct(id).catch((err) => {
+      console.error("Failed to delete product", err);
+      setProducts(prevProducts);
+    });
   };
 
   // SIMPLE SEARCH FILTER

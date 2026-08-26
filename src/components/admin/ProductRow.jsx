@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { CircleAlert, ExternalLink, Star } from "lucide-react";
+import { CircleAlert, ExternalLink, Star, Trash2 } from "lucide-react";
 
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +16,7 @@ import { StockInput } from "./StockInput";
 import { PriceInput } from "./PriceInput";
 import { FeaturedToggle } from "./FeaturedToggle";
 
- function ProductRowContent({ id, name, slug, stock, price, featured, category, image, onPriceChange, onStockChange }) {
+function ProductRowContent({ id, name, slug, stock, price, featured, category, image, onPriceChange, onStockChange, onDelete }) {
   const lowStock = isLowStock(stock);
   const outOfStock = isOutOfStock(stock);
 
@@ -151,11 +151,28 @@ import { FeaturedToggle } from "./FeaturedToggle";
         </div>
       </TableCell>
 
-      {/* Featured */}
+       {/* Featured */}
       <TableCell className="hidden py-4 lg:table-cell">
         <Suspense fallback={<Skeleton className="h-8 w-8" />}>
           <FeaturedToggle id={id} featured={featured} />
         </Suspense>
+      </TableCell>
+
+      {/* Delete */}
+      <TableCell className="py-4">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (confirm(`Delete "${name || "this product"}"? This cannot be undone.`)) {
+              onDelete(id);
+            }
+          }}
+          className="text-zinc-400 hover:text-red-600"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
       </TableCell>
     </TableRow>
   );
@@ -186,8 +203,12 @@ function ProductRowSkeleton() {
         <Skeleton className="h-8 w-20" />
       </TableCell>
 
-      <TableCell className="hidden py-4 lg:table-cell">
+        <TableCell className="hidden py-4 lg:table-cell">
         <Skeleton className="h-8 w-8" />
+      </TableCell>
+
+      <TableCell className="py-4">
+        <Skeleton className="h-4 w-4" />
       </TableCell>
     </TableRow>
   );
